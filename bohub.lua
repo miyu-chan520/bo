@@ -1,5 +1,6 @@
 -- ==========================================
--- BO HUB v7.2 | ENGLISH ONLY
+-- BO HUB v7.3 | NUCLEARBOBO ORIGINAL LOGIC
+-- Invisible = COPY 100% từ NuclearBobo 5.0
 -- ==========================================
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -15,7 +16,7 @@ local isMobile = UserInputService.TouchEnabled
 local Toggles = {}
 
 -- ==========================================
--- 🌈 RAINBOW
+-- 🌈 RAINBOW (GỐC NUCLEARBOBO)
 -- ==========================================
 local function createSmoothRainbow(stroke, speed)
     speed = speed or 0.02
@@ -48,6 +49,18 @@ end
 -- 1. CONFIG
 -- ==========================================
 local Config = {
+    -- ⚠️ NUCLEARBOBO ORIGINAL INVISIBLE CONFIG
+    ToggleKey = Enum.KeyCode.X, -- Không dùng nữa, chỉ giữ cho logic gốc
+    UIToggleKey = Enum.KeyCode.M, -- Không dùng nữa
+    TeleportHeight = -200000, -- GỐC
+    Transparency = 0.7, -- GỐC
+    PrimaryColor = Color3.new(1, 0.5, 0),
+    SecondaryColor = Color3.new(0.2, 0.2, 0.2),
+    BackgroundColor = Color3.fromRGB(10, 10, 10),
+    TextColor = Color3.new(1, 1, 1),
+    ActiveColor = Color3.new(0, 1, 0),
+
+    -- BO HUB CONFIG
     Aim = { Enabled=false, VisibleCheck=true, FOV=100, Mode=2 },
     Magnet = { Enabled=false, Limit=5 },
     ESP = {
@@ -56,43 +69,122 @@ local Config = {
         Color=Color3.new(1,1,1),Rainbow=false
     },
     Hitbox = { Enabled=false, Size=15, Mode=1 },
-    Invisible = { Enabled=false, TeleportHeight = -200000 },
     Stats = { ShowCount = true },
     RivalFast = false
 }
 
+-- ==========================================
+-- 👻 NUCLEARBOBO 5.0 | ✅ FIX COLLISIONPART + HRP
+-- KHÔNG SET TRANSPARENCY CHO: HumanoidRootPart VÀ CollisionPart
+-- 2 part này để Roblox quản lý mặc định HOÀN TOÀN
+-- ==========================================
+local character, humanoid, rootPart
+local invisible = false -- GỐC NUCLEAR
+local parts = {} -- GỐC: danh sách part chỉnh Transparency
+local connections = {} -- GỐC
+local descConn = nil
+
+-- ✅ DANH SÁCH PART KHÔNG ĐƯỢC ĐỤNG GÌ (không set Transparency)
+local EXCLUDE_NAMES = {
+    ["HumanoidRootPart"] = true,
+    ["CollisionPart"] = true  -- ✅ THÊM DÒNG NÀY LÀ HẾT
+}
+
+-- GỐC: setupCharacter
+local function setupCharacter()
+    if descConn then pcall(function()descConn:Disconnect()end)end
+    parts = {} -- reset danh sách
+    
+    character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    humanoid = character:WaitForChild("Humanoid")
+    rootPart = character:WaitForChild("HumanoidRootPart")
+    
+    -- ✅ CHẾT → TẮT INVISIBLE + TẮT TOGGLE UI
+    humanoid.Died:Once(function()
+        invisible = false
+        if Toggles.Invisible then Toggles.Invisible(false) end
+        -- TẮT: trả tất cả về 0 (KHÔNG ĐỤNG HRP / CollisionPart)
+        for _, part in pairs(parts) do
+            pcall(function() if part:IsA("BasePart") then part.Transparency = 0 end end)
+        end
+    end)
+    
+    -- ✅ QUÉT PART → BỎ QUA HRP VÀ COLLISIONPART
+    for _, obj in pairs(character:GetDescendants()) do
+        if obj:IsA("BasePart") and not EXCLUDE_NAMES[obj.Name] then
+            table.insert(parts, obj)
+            if invisible then obj.Transparency = Config.Transparency end -- 0.7 GỐC
+        end
+    end
+    
+    -- ✅ PART MỚI SPAWN → CŨNG BỎ QUA 2 PART NÀY
+    descConn = character.DescendantAdded:Connect(function(obj)
+        task.wait()
+        if obj:IsA("BasePart") and not EXCLUDE_NAMES[obj.Name] then
+            table.insert(parts, obj)
+            if invisible then obj.Transparency = Config.Transparency end
+        end
+    end)
+end
+
+-- ✅ GỐC 100% toggleInvisibility: CHỈ set 0 ↔ 0.7 cho parts hợp lệ
+local function toggleInvisibility()
+    invisible = not invisible
+    
+    for _, part in pairs(parts) do
+        pcall(function()
+            if part:IsA("BasePart") then
+                part.Transparency = invisible and Config.Transparency or 0
+            end
+        end)
+    end
+    
+    if Toggles.Invisible then Toggles.Invisible(invisible) end
+end
+
+-- ✅ GỐC 100% startTeleportLoop (CHỈ teleport, KHÔNG ĐỤNG TRANSPARENCY)
+local function startTeleportLoop()
+    connections.Heartbeat = RunService.Heartbeat:Connect(function()
+        if invisible and character and rootPart and humanoid and humanoid.Health > 0 then
+            local cf = rootPart.CFrame
+            local camOffset = humanoid.CameraOffset
+            local hidden = cf * CFrame.new(0, Config.TeleportHeight, 0) -- GỐC: -200000 Y
+            
+            -- GỐC: 2 dòng này KHÔNG ĐƯỢC SỬA
+            rootPart.CFrame = hidden
+            humanoid.CameraOffset = hidden:ToObjectSpace(CFrame.new(cf.Position)).Position
+            
+            RunService.RenderStepped:Wait()
+            
+            -- GỐC: 2 dòng này KHÔNG ĐƯỢC SỬA
+            rootPart.CFrame = cf
+            humanoid.CameraOffset = camOffset
+        end
+    end)
+end
+
+-- GỐC: Khởi tạo
+setupCharacter()
+startTeleportLoop()
+
+-- GỐC: Character Added (respawn)
+connections.CharacterAdded = LocalPlayer.CharacterAdded:Connect(function()
+    invisible = false
+    if Toggles.Invisible then Toggles.Invisible(false) end
+    task.wait(1)
+    setupCharacter()
+end)
+
+-- ==========================================
+-- 2. BO HUB SCANNER + LOGIC
+-- ==========================================
 local ESPData={};local AllEntities={}
 local LockedTarget,LockedAimPart,ProAimStartTime,ProAimDuration=nil,nil,nil,nil
 local MagnetAnchorPos=nil;local MagnetTarget=nil
-local character,humanoid,rootPart
 
 local FOVCircle=Drawing.new("Circle");FOVCircle.Thickness=1;FOVCircle.Filled=false
 local StatsText=Drawing.new("Text");StatsText.Size=isMobile and 16 or 18;StatsText.Center=true;StatsText.Outline=true;StatsText.Visible=true;StatsText.Color=Color3.new(1,.6,0)
 
--- ==========================================
--- 👻 INVISIBLE -200k
--- ==========================================
-local function setupCharacter()
-    character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-    humanoid = character:WaitForChild("Humanoid",10)
-    rootPart = character:WaitForChild("HumanoidRootPart",10)
-end
-setupCharacter()
-LocalPlayer.CharacterAdded:Connect(function() Config.Invisible.Enabled=false; task.wait(1); setupCharacter() end)
-
-RunService.Heartbeat:Connect(function()
-    if Config.Invisible.Enabled and character and rootPart and humanoid then
-        local cf = rootPart.CFrame
-        local hidden = cf * CFrame.new(0, Config.Invisible.TeleportHeight, 0)
-        rootPart.CFrame = hidden
-        RunService.RenderStepped:Wait()
-        rootPart.CFrame = cf
-    end
-end)
-
--- ==========================================
--- 2. SCANNER + LOGIC
--- ==========================================
 task.spawn(function()
     while task.wait(1) do
         local t={}
@@ -159,20 +251,18 @@ RunService.RenderStepped:Connect(function()
         end
     end
 
+    -- Status: chỉ hiện Invisible khi bật
     if not Config.Stats.ShowCount then
-        if Config.Invisible.Enabled then
-            StatsText.Visible = true
-            StatsText.Text = "👻 INVISIBLE"
-        else
-            StatsText.Visible = false
-        end
+        StatsText.Visible = invisible
+        StatsText.Text = "👻 INVISIBLE"
     else
         StatsText.Visible = true
         local base = "Players: "..cp.." | Bots: "..cb
-        if Config.Invisible.Enabled then base = base.." | 👻 INVISIBLE" end
+        if invisible then base = base.." | 👻 INVISIBLE" end
         StatsText.Text = base
     end
 
+    -- AIM
     if tc then
         local th,tb=tc:FindFirstChild("Head"),tc:FindFirstChild("HumanoidRootPart")
         if th and tb then
@@ -198,6 +288,7 @@ RunService.RenderStepped:Connect(function()
         end
     else LockedTarget=nil end
 
+    -- ESP + HITBOX
     for c,o in pairs(ESPData)do
         local h,hd,rt=c:FindFirstChildOfClass("Humanoid"),c:FindFirstChild("Head"),c:FindFirstChild("HumanoidRootPart")
         if h and h.Health>0 and IsEnemy(c)and hd and rt then
@@ -224,7 +315,7 @@ RunService.RenderStepped:Connect(function()
 end)
 
 -- ==========================================
--- 🎨 UI + RAINBOW BORDER
+-- 🎨 UI BO HUB + RAINBOW
 -- ==========================================
 local UI=Instance.new("ScreenGui",CoreGui);UI.Name="BOHUB";UI.ResetOnSpawn=false
 local MW,MH=isMobile and 310 or 460,isMobile and 510 or 530
@@ -235,10 +326,9 @@ Instance.new("UICorner",MainFrame).CornerRadius=UDim.new(0,12)
 local MS=Instance.new("UIStroke",MainFrame);MS.Thickness=2.5
 createSmoothRainbow(MS,0.025)
 
--- ✅ TITLE: NO NUCLEAR TEXT
 local Title=Instance.new("TextLabel",MainFrame)
 Title.Size=UDim2.new(1,0,0,48);Title.BackgroundColor3=Color3.fromRGB(18,18,22)
-Title.Text="🔥 BO HUB v7.2";Title.TextColor3=Color3.new(1,.6,0)
+Title.Text="🔥 BO HUB v7.3";Title.TextColor3=Color3.new(1,.6,0)
 Title.Font=Enum.Font.GothamBold;Title.TextSize=17
 Instance.new("UICorner",Title).CornerRadius=UDim.new(0,12)
 
@@ -302,12 +392,12 @@ local function AddButton(P,N,Color,CB)
 end
 local function AddSpace(P,H)local S=Instance.new("Frame",P);S.Size=UDim2.new(1,0,0,H or 5);S.BackgroundTransparency=1 end
 
--- ================= TAB 1: COMBAT =================
+-- TAB 1 COMBAT
 Toggles.Aimbot = AddToggle(Tab1,"Enable Aimbot",false,function(v)Config.Aim.Enabled=v end)
 local SetAimMode=AddDropdown(Tab1,"Aim Part",{"Body","Head","Random 70/30","Pro Pre-Aim"},function(v)Config.Aim.Mode=v end)
 SetAimMode(2)
 Toggles.WallCheck = AddToggle(Tab1,"Wall Check (Visible Only)",true,function(v)Config.Aim.VisibleCheck=v end)
-AddSlider(Tab1,"FOV Radius",50,500,100,function(v)Config.Aim.FOV=v end)
+AddSlider(Tab1,"FOV Radius",50,500,100,function(v)Config.Aim.FOV=v end) -- ✅ MẶC ĐỊNH 100
 AddSpace(Tab1,5)
 Toggles.Magnet = AddToggle(Tab1,"Enable Magnet (On Shoot)",false,function(v)Config.Magnet.Enabled=v end)
 AddSlider(Tab1,"Magnet Safe Range",1,20,5,function(v)Config.Magnet.Limit=v end)
@@ -316,8 +406,7 @@ Toggles.Hitbox = AddToggle(Tab1,"Enable Hitbox Expander",false,function(v)Config
 AddDropdown(Tab1,"Hitbox Part",{"Body","Head"},function(v)Config.Hitbox.Mode=v end)
 AddSlider(Tab1,"Hitbox Size",1,50,15,function(v)Config.Hitbox.Size=v end)
 
--- ================= TAB 2: VISUALS (REORDERED) =================
--- ✅ NEW ORDER: FOV → COUNT → BOXES → HEALTH → TRACERS → NAMES → DISTANCE → SPACE → COLOR
+-- TAB 2 VISUALS (ĐÚNG THỨ TỰ)
 Toggles.ShowFOV = AddToggle(Tab2,"Show FOV Circle",true,function(v)Config.ESP.ShowFOV=v end)
 Toggles.ShowCount = AddToggle(Tab2,"Show Player / Bot Count",true,function(v)Config.Stats.ShowCount=v end)
 Toggles.ESPBox = AddToggle(Tab2,"ESP Boxes",false,function(v)Config.ESP.Box=v end)
@@ -326,17 +415,19 @@ Toggles.ESPTracer = AddToggle(Tab2,"ESP Tracers",false,function(v)Config.ESP.Tra
 Toggles.ESPName = AddToggle(Tab2,"ESP Names",false,function(v)Config.ESP.Name=v end)
 Toggles.ESPDistance = AddToggle(Tab2,"ESP Distance",false,function(v)Config.ESP.Distance=v end)
 AddSpace(Tab2,8)
--- ✅ ESP COLOR MOVED TO BOTTOM
 AddDropdown(Tab2,"ESP Color",{"White","Red","Green","Blue","Yellow","Purple","RAINBOW 🌈"},function(idx)
     local cols={Color3.new(1,1,1),Color3.new(1,.2,.2),Color3.new(.2,1,.2),Color3.new(.2,.6,1),Color3.new(1,1,.2),Color3.new(.8,.2,1)}
     if idx<=6 then Config.ESP.Color=cols[idx];Config.ESP.Rainbow=false else Config.ESP.Rainbow=true end
 end)
 
--- ================= TAB 3: EXTRA =================
--- ✅ NO NUCLEAR TEXT ON TOGGLE
-Toggles.Invisible = AddToggle(Tab3,"👻 Invisible",false,function(v)Config.Invisible.Enabled=v end)
+-- TAB 3 EXTRA
+-- ✅ GỌI NGUYÊN toggleInvisibility() CỦA NUCLEARBOBO
+Toggles.Invisible = AddToggle(Tab3,"👻 Invisible",false,function(v)
+    if v ~= invisible then toggleInvisibility() end
+end)
 AddSpace(Tab3,10)
 
+-- ✅ RIVAL FAST: FOV = 100 (KHÔNG TĂNG NỮA)
 AddButton(Tab3,"⚡ RIVAL FAST FUNCTION",Color3.new(1,.2,.2),function()
     Config.RivalFast = not Config.RivalFast
     if Config.RivalFast then
@@ -349,7 +440,8 @@ AddButton(Tab3,"⚡ RIVAL FAST FUNCTION",Color3.new(1,.2,.2),function()
         Config.Aim.Enabled=true;   Toggles.Aimbot(true)
         Config.Aim.Mode=4;         SetAimMode(4)
         Config.Aim.VisibleCheck=true; Toggles.WallCheck(true)
-        Config.Aim.FOV=180
+        -- ✅ FOV = 100 (KHÔNG ĐỔI GÌ)
+        Config.Aim.FOV=100
         Config.Magnet.Enabled=true;Toggles.Magnet(true)
         Config.Magnet.Limit=8
     else
@@ -363,37 +455,59 @@ AddButton(Tab3,"⚡ RIVAL FAST FUNCTION",Color3.new(1,.2,.2),function()
     end
 end)
 
--- ================= CONTROLS =================
+-- ================= CHỈ NÚT K (TIẾP TỤC) =================
 if isMobile then
-    local OB=Instance.new("TextButton",UI);OB.Size=UDim2.new(0,55,0,55);OB.Position=UDim2.new(0,15,.45,0)
-    OB.BackgroundColor3=Color3.fromRGB(18,18,22);OB.Text="BO";OB.TextColor3=Color3.new(1,1,1);OB.Font=Enum.Font.GothamBlack;OB.TextSize=18
+    local OB=Instance.new("TextButton",UI)
+    OB.Size=UDim2.new(0,55,0,55);OB.Position=UDim2.new(0,15,.45,0)
+    OB.BackgroundColor3=Color3.fromRGB(18,18,22);OB.Text="BO"
+    OB.TextColor3=Color3.new(1,1,1);OB.Font=Enum.Font.GothamBlack;OB.TextSize=18
     Instance.new("UICorner",OB).CornerRadius=UDim.new(1,0)
-    local OBS=Instance.new("UIStroke",OB);OBS.Color=Color3.new(1,.5,0);OBS.Thickness=2;createSmoothRainbow(OBS)
-    local dr,ds,sp;OB.InputBegan:Connect(function(i)if i.UserInputType=="Touch"then dr=true;ds=i.Position;sp=OB.Position end end)
+    local OBS=Instance.new("UIStroke",OB);OBS.Color=Color3.new(1,.5,0);OBS.Thickness=2
+    createSmoothRainbow(OBS)
+    local dr,ds,sp
+    OB.InputBegan:Connect(function(i)if i.UserInputType=="Touch"then dr=true;ds=i.Position;sp=OB.Position end end)
     UserInputService.InputChanged:Connect(function(i)if dr and i.UserInputType=="Touch"then local d=i-ds;OB.Position=UDim2.new(sp.X.Scale,sp.X.Offset+d.X,sp.Y.Scale,sp.Y.Offset+d.Y)end end)
     UserInputService.InputEnded:Connect(function(i)if i.UserInputType=="Touch"then dr=false end end)
     OB.MouseButton1Click:Connect(function()MainFrame.Visible=not MainFrame.Visible end)
 else
+    -- ✅ PC: CHỈ CÒN PHÍM K, BỎ HOÀN TOÀN X VÀ M
     UserInputService.InputBegan:Connect(function(i,gp)
         if gp then return end
-        if i.KeyCode == Enum.KeyCode.K then MainFrame.Visible = not MainFrame.Visible end
+        if i.KeyCode == Enum.KeyCode.K then
+            MainFrame.Visible = not MainFrame.Visible
+        end
     end)
 
+    -- Bảng hướng dẫn PC
     local Guide=Instance.new("ScreenGui");Guide.Name="BOGuide";Guide.Parent=LocalPlayer.PlayerGui;Guide.ResetOnSpawn=false
     local GF=Instance.new("Frame",Guide);GF.Size=UDim2.new(0,260,0,80);GF.Position=UDim2.new(0.5,-130,0.88,-40)
     GF.BackgroundColor3=Color3.fromRGB(12,12,16)
     Instance.new("UICorner",GF).CornerRadius=UDim.new(0,10)
     local GS=Instance.new("UIStroke",GF);GS.Thickness=2;createSmoothRainbow(GS,0.03)
-    local GT=Instance.new("TextLabel",GF);GT.Size=UDim2.new(1,0,0,28);GT.BackgroundColor3=Color3.new(1,.5,0);GT.Text="✅ BO HUB LOADED";GT.TextColor3=Color3.new(0,0,0);GT.Font=Enum.Font.GothamBold;GT.TextSize=13
+    local GT=Instance.new("TextLabel",GF);GT.Size=UDim2.new(1,0,0,28);GT.BackgroundColor3=Color3.new(1,.5,0)
+    GT.Text="✅ BO HUB LOADED";GT.TextColor3=Color3.new(0,0,0);GT.Font=Enum.Font.GothamBold;GT.TextSize=13
     local GL=Instance.new("TextLabel",GF);GL.Size=UDim2.new(1,-20,0,40);GL.Position=UDim2.new(0,10,0,32);GL.BackgroundTransparency=1
     GL.Text="⌨️  Press [ K ] to open Menu"
     GL.TextColor3=Color3.new(230,230,230);GL.Font=Enum.Font.Gotham;GL.TextSize=14;GL.TextXAlignment="Left"
     task.delay(6,function()pcall(function()Guide:Destroy()end)end)
 end
 
+-- KÉO MENU BẰNG TIÊU ĐỀ
 local md,mss,msp
-Title.InputBegan:Connect(function(i)if i.UserInputType=="MouseButton1"or i.UserInputType=="Touch"then md=true;mss=i.Position;msp=MainFrame.Position end end)
-UserInputService.InputChanged:Connect(function(i)if md and(i.UserInputType=="MouseMovement"or i.UserInputType=="Touch")then local d=i-mss;MainFrame.Position=UDim2.new(msp.X.Scale,msp.X.Offset+d.X,msp.Y.Scale,msp.Y.Offset+d.Y)end end)
-UserInputService.InputEnded:Connect(function(i)if i.UserInputType=="MouseButton1"or i.UserInputType=="Touch"then md=false end end)
+Title.InputBegan:Connect(function(i)
+    if i.UserInputType=="MouseButton1" or i.UserInputType=="Touch" then
+        md=true;mss=i.Position;msp=MainFrame.Position
+    end
+end)
+UserInputService.InputChanged:Connect(function(i)
+    if md and (i.UserInputType=="MouseMovement" or i.UserInputType=="Touch") then
+        local d=i-mss
+        MainFrame.Position=UDim2.new(msp.X.Scale,msp.X.Offset+d.X,msp.Y.Scale,msp.Y.Offset+d.Y)
+    end
+end)
+UserInputService.InputEnded:Connect(function(i)
+    if i.UserInputType=="MouseButton1" or i.UserInputType=="Touch" then md=false end
+end)
 
-print("[BO HUB v7.2] Loaded ✅ | Press [K] to open")
+-- ✅ CONSOLE 1 DÒNG ĐƠN GIẢN
+print("[BO HUB v7.3] Loaded ✅ | Press [K] to open")
