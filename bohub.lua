@@ -198,15 +198,34 @@ RunService.RenderStepped:Connect(function()
             
             -- Safe Magnet
             if Config.Magnet.Enabled and isInteracting then
-                local diff = (Camera.CFrame * CFrame.new(0, 0, -(aimPartForCheck.Position - Camera.CFrame.Position):Dot(Camera.CFrame.LookVector))).Position - aimPartForCheck.Position
-                if diff.Magnitude > Config.Magnet.Limit then diff = diff.Unit * Config.Magnet.Limit end
-                aimPartForCheck.CFrame = CFrame.new(aimPartForCheck.Position + diff)
-                aimPartForCheck.Velocity = Vector3.zero
-            end
+    local rootPart = targetChar:FindFirstChild("HumanoidRootPart")
+    
+    if rootPart then
+        -- 1. Lấy vị trí GỐC (Dùng RootPart làm mỏ neo, cộng thêm chiều cao của Đầu nếu cần)
+        local isHead = (aimPartForCheck.Name == "Head")
+        local originalPos = rootPart.Position + (isHead and Vector3.new(0, 1.5, 0) or Vector3.zero)
+
+        -- 2. Tìm điểm gần nhất trên tia ngắm của Camera
+        local camPos = Camera.CFrame.Position
+        local lookVec = Camera.CFrame.LookVector
+        
+        -- Dùng Dot Product để tìm điểm chiếu vuông góc từ originalPos lên tia ngắm
+        local projectionDistance = (originalPos - camPos):Dot(lookVec)
+        local pointOnRay = camPos + (lookVec * projectionDistance)
+
+        -- 3. Tính toán khoảng cách chênh lệch từ vị trí gốc đến điểm trên tia ngắm
+        local diff = pointOnRay - originalPos
+
+        -- 4. Giới hạn khoảng cách CỰC ĐẠI dựa trên Limit
+        if diff.Magnitude > Config.Magnet.Limit then 
+            diff = diff.Unit * Config.Magnet.Limit 
         end
-    else
-        LockedTarget = nil
+
+        -- 5. Dịch chuyển part dựa trên VỊ TRÍ GỐC + ĐỘ LỆCH ĐÃ GIỚI HẠN
+        aimPartForCheck.CFrame = CFrame.new(originalPos + diff)
+        aimPartForCheck.Velocity = Vector3.zero
     end
+end
 
     -- ESP & HITBOX RENDER
     for char, obj in pairs(ESPData) do
