@@ -38,6 +38,8 @@ local Config = {
 local ESPData = {}
 local AllEntities = {} 
 local LockedTarget, LockedAimPart, ProAimStartTime, ProAimDuration = nil, nil, nil, nil
+local MagnetAnchorPos = nil 
+local MagnetTarget = nil    
 
 -- Drawings (Rendered directly, no image dependencies)
 local FOVCircle = Drawing.new("Circle")
@@ -191,41 +193,48 @@ RunService.RenderStepped:Connect(function()
                 aimPartForCheck = tBody 
             end
 
-            if Config.Aim.Enabled and IsVisible(aimPartForCheck) then
-                -- Direct Camera Lock (Fixes shake by not touching the RootPart)
-                Camera.CFrame = CFrame.lookAt(Camera.CFrame.Position, targetPos)
-            end
+            -- QUY TẮC MỚI: Chỉ giật màn hình bám địch khi BẠN ĐANG BẤM CHUỘT/CHẠM VÀO MÀN HÌNH (isInteracting)
+            local aimbotRunning = Config.Aim.Enabled and isInteracting and IsVisible(aimPartForCheck)
             
-            -- Safe Magnet
-            if Config.Magnet.Enabled and isInteracting then
-    local rootPart = targetChar:FindFirstChild("HumanoidRootPart")
-    
-    if rootPart then
-        -- 1. Lấy vị trí GỐC (Dùng RootPart làm mỏ neo, cộng thêm chiều cao của Đầu nếu cần)
-        local isHead = (aimPartForCheck.Name == "Head")
-        local originalPos = rootPart.Position + (isHead and Vector3.new(0, 1.5, 0) or Vector3.zero)
+            if aimbotRunning then
+                -- Chạy Aimbot
+                Camera.CFrame = CFrame.lookAt(Camera.CFrame.Position, targetPos)
+                -- Đặt lại mỏ neo Magnet để chống giật
+                MagnetAnchorPos = nil
+                MagnetTarget = nil
+                
+            elseif Config.Magnet.Enabled and isInteracting then
+                -- Chỉ chạy Magnet nếu Aimbot đang tắt (hoặc không nhìn thấy địch sau tường)
+                local rootPart = targetChar:FindFirstChild("HumanoidRootPart")
+                if rootPart then
+                    if not MagnetAnchorPos or MagnetTarget ~= targetChar then
+                        MagnetTarget = targetChar
+                        local isHead = (aimPartForCheck.Name == "Head")
+                        MagnetAnchorPos = rootPart.Position + (isHead and Vector3.new(0, 1.5, 0) or Vector3.zero)
+                    end
 
-        -- 2. Tìm điểm gần nhất trên tia ngắm của Camera
-        local camPos = Camera.CFrame.Position
-        local lookVec = Camera.CFrame.LookVector
-        
-        -- Dùng Dot Product để tìm điểm chiếu vuông góc từ originalPos lên tia ngắm
-        local projectionDistance = (originalPos - camPos):Dot(lookVec)
-        local pointOnRay = camPos + (lookVec * projectionDistance)
+                    local camPos = Camera.CFrame.Position
+                    local lookVec = Camera.CFrame.LookVector
+                    local projectionDistance = (MagnetAnchorPos - camPos):Dot(lookVec)
+                    local pointOnRay = camPos + (lookVec * projectionDistance)
+                    local diff = pointOnRay - MagnetAnchorPos
 
-        -- 3. Tính toán khoảng cách chênh lệch từ vị trí gốc đến điểm trên tia ngắm
-        local diff = pointOnRay - originalPos
+                    if diff.Magnitude > Config.Magnet.Limit then 
+                        diff = diff.Unit * Config.Magnet.Limit 
+                    end
 
-        -- 4. Giới hạn khoảng cách CỰC ĐẠI dựa trên Limit
-        if diff.Magnitude > Config.Magnet.Limit then 
-            diff = diff.Unit * Config.Magnet.Limit 
+                    aimPartForCheck.CFrame = CFrame.new(MagnetAnchorPos + diff)
+                    aimPartForCheck.Velocity = Vector3.zero
+                end
+            else
+                -- Nhả chuột hoặc không làm gì
+                MagnetAnchorPos = nil
+                MagnetTarget = nil
+            end
         end
-
-        -- 5. Dịch chuyển part dựa trên VỊ TRÍ GỐC + ĐỘ LỆCH ĐÃ GIỚI HẠN
-        aimPartForCheck.CFrame = CFrame.new(originalPos + diff)
-        aimPartForCheck.Velocity = Vector3.zero
+    else
+        LockedTarget = nil
     end
-end
 
     -- ESP & HITBOX RENDER
     for char, obj in pairs(ESPData) do
