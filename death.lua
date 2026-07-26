@@ -1,4 +1,4 @@
--- === iLoVe DeAtH // ULTIMATE DESTROYER v9.0 (UNIVERSAL OMNI EDITION) ===
+-- === iLoVe DeAtH // ULTIMATE DESTROYER v11.0 (CROSS-PLATFORM EDITION) ===
 
 local Services = setmetatable({}, {__index = function(_, k) return game:GetService(k) end})
 local Players = Services.Players
@@ -9,7 +9,6 @@ local TeleportService = Services.TeleportService
 local HttpService = Services.HttpService
 local TextChatService = Services.TextChatService
 local ReplicatedStorage = Services.ReplicatedStorage
-local VirtualUser = Services.VirtualUser
 local LocalPlayer = Players.LocalPlayer
 local Camera = Workspace.CurrentCamera
 
@@ -18,17 +17,26 @@ local ProtectGui = gethui or function()
 end
 
 -- ==========================================
--- 0. UNIVERSAL CLICK ENGINE (HỖ TRỢ PC & MOBILE)
+-- 0. CROSS-PLATFORM CLICK ENGINE (VIM + NATIVE)
 -- ==========================================
 local function UniversalClick()
     pcall(function()
+        -- Virtual Input Manager for cross-platform reliability
+        local vim = game:GetService("VirtualInputManager")
+        if vim then
+            vim:SendMouseButtonEvent(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2, 0, true, game, 1)
+            task.wait()
+            vim:SendMouseButtonEvent(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2, 0, false, game, 1)
+        end
+        
+        -- Fallback for PC Executors
         if type(mouse1click) == "function" then
             mouse1click()
-        else
-            VirtualUser:ClickButton1(Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2))
-            local t = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Tool")
-            if t then t:Activate() end
         end
+        
+        -- Fallback for Classic Tools
+        local t = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Tool")
+        if t then t:Activate() end
     end)
 end
 
@@ -53,7 +61,7 @@ if type(hookmetamethod) == "function" then
         if Method == "Kick" or Method == "kick" then return end
         if Method == "FireServer" then
             local rn = tostring(Self.Name):lower()
-            if rn:find("kick") or rn:find("alert") or rn:find("ban") then return end
+            if rn:find("kick") or rn:find("alert") or rn:find("ban") or rn:find("log") then return end
         end
         return OldNamecall(Self, ...)
     end)
@@ -73,7 +81,331 @@ end)
 DeepCleanup()
 
 -- ==========================================
--- 2. NUCLEAR BOBO INVISIBLE ENGINE
+-- 2. GLOBAL VARIABLES & GUI CONFIG
+-- ==========================================
+local MenuOpen = true
+_G.SpamText = "iLoVe DeAtH v11.0 is DOMINATING THIS SERVER!"
+_G.SavedSkyPos = nil
+_G.SkyBasePart = nil
+_G.SkyCampHeight = 40
+
+local Features = {
+    KillAura = false, AimLock = false, TriggerBot = false, GunMod = false, Magnet = false, Hitbox = false,
+    SpeedHack = false, Noclip = false, InfJump = false, Spinbot = false, Fly = false,
+    TpToClosest = false, ClickTP = false, BringEnemies = false, AnchorSpawn = false, SkyCamp = false,
+    ESP = false, Tracers = false, Fullbright = false, NoFog = false, Chams = false,
+    AntiAim = false, SpamChat = false, FpsBooster = false, ServerHop = false, AutoRespawn = false, VoidImmune = false, Invisible = false
+}
+
+local MagnetLimit = 6
+local BaseHeadSizeV = Vector3.new(1.2, 1.2, 1.2)
+local HitboxSize = 15
+
+if ProtectGui():FindFirstChild("iLoVeDeAtH_v11") then ProtectGui().iLoVeDeAtH_v11:Destroy() end
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "iLoVeDeAtH_v11"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = ProtectGui()
+
+-- Mobile Toggle Button
+if InputService.TouchEnabled then
+    local MobileBtn = Instance.new("TextButton", ScreenGui)
+    MobileBtn.Size = UDim2.new(0, 45, 0, 45)
+    MobileBtn.Position = UDim2.new(0, 10, 0, 10)
+    MobileBtn.BackgroundColor3 = Color3.fromRGB(20, 15, 20)
+    MobileBtn.TextColor3 = Color3.fromRGB(255, 0, 0)
+    MobileBtn.Font = Enum.Font.GothamBold
+    MobileBtn.TextSize = 10
+    MobileBtn.Text = "MENU"
+    Instance.new("UICorner", MobileBtn).CornerRadius = UDim.new(1, 0)
+    local Stroke = Instance.new("UIStroke", MobileBtn)
+    Stroke.Color = Color3.fromRGB(255, 0, 0)
+    Stroke.Thickness = 2
+    
+    MobileBtn.MouseButton1Click:Connect(function()
+        MenuOpen = not MenuOpen
+        if ScreenGui:FindFirstChild("MainFrame") then
+            ScreenGui.MainFrame.Visible = MenuOpen
+        end
+    end)
+end
+
+local MainFrame = Instance.new("Frame", ScreenGui)
+MainFrame.Name = "MainFrame"
+MainFrame.Size = UDim2.new(0, 480, 0, 450)
+MainFrame.Position = UDim2.new(0.5, -240, 0.5, -225)
+MainFrame.BackgroundColor3 = Color3.fromRGB(15, 10, 15)
+MainFrame.BorderSizePixel = 0
+MainFrame.Active = true
+MainFrame.Draggable = true
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 8)
+local MainStroke = Instance.new("UIStroke", MainFrame)
+MainStroke.Color = Color3.fromRGB(220, 0, 0)
+MainStroke.Thickness = 2
+
+local Sidebar = Instance.new("Frame", MainFrame)
+Sidebar.Size = UDim2.new(0, 130, 1, 0)
+Sidebar.BackgroundColor3 = Color3.fromRGB(10, 5, 10)
+Sidebar.BorderSizePixel = 0
+Instance.new("UICorner", Sidebar).CornerRadius = UDim.new(0, 8)
+
+local TitleText = Instance.new("TextLabel", Sidebar)
+TitleText.Size = UDim2.new(1, 0, 0, 45)
+TitleText.Text = "DEATH v11.0"
+TitleText.TextColor3 = Color3.fromRGB(255, 0, 0)
+TitleText.TextSize = 18
+TitleText.Font = Enum.Font.GothamBlack
+TitleText.BackgroundTransparency = 1
+
+local InsertHint = Instance.new("TextLabel", Sidebar)
+InsertHint.Size = UDim2.new(1, 0, 0, 20)
+InsertHint.Position = UDim2.new(0, 0, 1, -25)
+InsertHint.BackgroundTransparency = 1
+InsertHint.Text = "[INSERT] to Hide Menu"
+InsertHint.TextColor3 = Color3.fromRGB(150, 150, 150)
+InsertHint.Font = Enum.Font.Gotham
+InsertHint.TextSize = 9
+
+local ContentFrame = Instance.new("ScrollingFrame", MainFrame)
+ContentFrame.Size = UDim2.new(1, -145, 1, -20)
+ContentFrame.Position = UDim2.new(0, 138, 0, 10)
+ContentFrame.BackgroundTransparency = 1
+ContentFrame.BorderSizePixel = 0
+ContentFrame.ScrollBarThickness = 4
+ContentFrame.ScrollBarImageColor3 = Color3.fromRGB(220, 0, 0)
+
+local ListLayout = Instance.new("UIListLayout", ContentFrame)
+ListLayout.Padding = UDim.new(0, 8)
+ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+local function ClearContent()
+    for _, child in pairs(ContentFrame:GetChildren()) do
+        if child:IsA("TextButton") or child:IsA("TextBox") or child:IsA("Frame") then child:Destroy() end
+    end
+end
+
+local function SendNotification(msg)
+    pcall(function() Services.StarterGui:SetCore("SendNotification", { Title = "DEATH v11.0"; Text = msg; Duration = 2; }) end)
+end
+
+-- ==========================================
+-- 3. UI BUILDER (SLIDERS, TOGGLES, BUTTONS)
+-- ==========================================
+local function CreateToggle(text, key)
+    local Btn = Instance.new("TextButton", ContentFrame)
+    Btn.Size = UDim2.new(1, -10, 0, 35)
+    Btn.BorderSizePixel = 0
+    Btn.Font = Enum.Font.GothamBold
+    Btn.TextSize = 11
+    Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 4)
+
+    local function UpdateVisuals()
+        if Features[key] then
+            Btn.Text = ">> " .. text .. " <<"
+            Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+            Btn.BackgroundColor3 = Color3.fromRGB(180, 0, 0)
+        else
+            Btn.Text = "[ OFF ]  " .. text
+            Btn.TextColor3 = Color3.fromRGB(160, 160, 160)
+            Btn.BackgroundColor3 = Color3.fromRGB(25, 20, 25)
+        end
+    end
+    UpdateVisuals()
+    Btn.MouseButton1Click:Connect(function()
+        Features[key] = not Features[key]
+        UpdateVisuals()
+        if key == "Invisible" then ToggleNuclearInvisible(Features[key]) end
+    end)
+end
+
+local function CreateActionBtn(text, callback, isRage)
+    local Btn = Instance.new("TextButton", ContentFrame)
+    Btn.Size = UDim2.new(1, -10, 0, 35)
+    Btn.BorderSizePixel = 0
+    Btn.Font = Enum.Font.GothamBlack
+    Btn.TextSize = 12
+    Btn.Text = text
+    Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Btn.BackgroundColor3 = isRage and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(50, 50, 50)
+    Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 4)
+    if isRage then
+        local stroke = Instance.new("UIStroke", Btn)
+        stroke.Color = Color3.fromRGB(255, 255, 255)
+        stroke.Thickness = 1
+    end
+    Btn.MouseButton1Click:Connect(callback)
+end
+
+local function CreateTextBox(placeholder)
+    local Box = Instance.new("TextBox", ContentFrame)
+    Box.Size = UDim2.new(1, -10, 0, 35)
+    Box.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    Box.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Box.Font = Enum.Font.Gotham
+    Box.TextSize = 12
+    Box.PlaceholderText = placeholder
+    Box.Text = _G.SpamText
+    Instance.new("UICorner", Box).CornerRadius = UDim.new(0, 4)
+    Box.FocusLost:Connect(function() _G.SpamText = Box.Text end)
+end
+
+local function CreateSlider(text, min, max, step, default, callback)
+    local F = Instance.new("Frame", ContentFrame)
+    F.Size = UDim2.new(1, -10, 0, 45)
+    F.BackgroundColor3 = Color3.fromRGB(25, 20, 25)
+    Instance.new("UICorner", F).CornerRadius = UDim.new(0, 4)
+
+    local L = Instance.new("TextLabel", F)
+    L.Size = UDim2.new(1, -10, 0, 20)
+    L.Position = UDim2.new(0, 10, 0, 5)
+    L.BackgroundTransparency = 1
+    L.Text = text .. ": " .. default .. "m"
+    L.TextColor3 = Color3.fromRGB(200, 200, 200)
+    L.Font = Enum.Font.GothamBold
+    L.TextSize = 12
+    L.TextXAlignment = Enum.TextXAlignment.Left
+
+    local Track = Instance.new("TextButton", F)
+    Track.Size = UDim2.new(1, -20, 0, 8)
+    Track.Position = UDim2.new(0, 10, 0, 28)
+    Track.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
+    Track.Text = ""
+    Instance.new("UICorner", Track).CornerRadius = UDim.new(1, 0)
+
+    local Fill = Instance.new("Frame", Track)
+    Fill.Size = UDim2.new((default - min) / (max - min), 0, 1, 0)
+    Fill.BackgroundColor3 = Color3.fromRGB(180, 0, 0)
+    Instance.new("UICorner", Fill).CornerRadius = UDim.new(1, 0)
+
+    local dragging = false
+    local function Update(input)
+        local pos = math.clamp((input.Position.X - Track.AbsolutePosition.X) / Track.AbsoluteSize.X, 0, 1)
+        local value = math.floor(min + ((max - min) * pos))
+        value = math.floor(value / step + 0.5) * step
+        value = math.clamp(value, min, max)
+        
+        local exactPos = (value - min) / (max - min)
+        Fill.Size = UDim2.new(exactPos, 0, 1, 0)
+        L.Text = text .. ": " .. value .. "m"
+        callback(value)
+    end
+
+    Track.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            Update(input)
+        end
+    end)
+
+    InputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = false
+        end
+    end)
+
+    InputService.InputChanged:Connect(function(input)
+        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            Update(input)
+        end
+    end)
+end
+
+local RenderTab
+RenderTab = function(tabName)
+    ClearContent()
+    if tabName == "Combat" then
+        CreateActionBtn("🔥 RAGE MODE (ENABLE ALL) 🔥", function()
+            local rageList = {"ESP", "Tracers", "Chams", "Magnet", "SpeedHack", "InfJump", "GunMod", "Spinbot", "TpToClosest", "Fullbright", "NoFog"}
+            for _, v in ipairs(rageList) do Features[v] = true end
+            SendNotification("OMNI RAGE ACTIVATED!")
+            RenderTab("Combat")
+        end, true)
+        CreateToggle("AIMLOCK (180° INSTANT AIM)", "AimLock")
+        CreateToggle("SAFE MAGNET (Silent Aim)", "Magnet")
+        CreateToggle("HEAD HITBOX (15x Size)", "Hitbox")
+        CreateToggle("TRIGGERBOT (Warning: Some games might kick)", "TriggerBot")
+        CreateToggle("KILL AURA (Auto Attack Nearby)", "KillAura")
+        CreateToggle("GUN MOD (Old Games Only)", "GunMod")
+    elseif tabName == "Movement" then
+        CreateToggle("UNIVERSAL SPEEDHACK (CFrame Bypass)", "SpeedHack")
+        CreateToggle("TORNADO SPIN (Foot Pivot, 45°)", "Spinbot")
+        CreateToggle("INFINITE JUMP", "InfJump")
+        CreateToggle("NOCLIP", "Noclip")
+        CreateToggle("UNIVERSAL FLY (BodyVelocity)", "Fly")
+    elseif tabName == "Teleport" then
+        CreateActionBtn("☁️ SKY CAMP / OVERWATCH (Press Z) ☁️", function() end, false)
+        CreateSlider("SKY CAMP HEIGHT", 10, 500, 10, _G.SkyCampHeight, function(val)
+            _G.SkyCampHeight = val
+            if Features.SkyCamp and _G.SavedSkyPos and _G.SkyBasePart then
+                local char = LocalPlayer.Character
+                local root = char and char:FindFirstChild("HumanoidRootPart")
+                if root then
+                    local skyPos = _G.SavedSkyPos.Position + Vector3.new(0, val, 0)
+                    _G.SkyBasePart.Position = skyPos
+                    root.Velocity = Vector3.zero
+                    root.CFrame = CFrame.new(skyPos + Vector3.new(0, 4, 0))
+                end
+            end
+        end)
+        CreateToggle("TP TO CLOSEST (Press X)", "TpToClosest")
+        CreateToggle("CLICK TP (Ctrl + Click)", "ClickTP")
+        CreateToggle("BRING ENEMIES", "BringEnemies")
+    elseif tabName == "Visuals" then
+        CreateToggle("ESP BOX & NAME (Universal Drawing)", "ESP")
+        CreateToggle("TRACERS (Lines)", "Tracers")
+        CreateToggle("CHAMS (Wallhack)", "Chams")
+        CreateToggle("FULLBRIGHT", "Fullbright")
+        CreateToggle("NO FOG", "NoFog")
+    elseif tabName == "Exploits" then
+        CreateToggle("GOD INVISIBLE (NuclearBobo)", "Invisible")
+        CreateToggle("VOID IMMUNITY (Bounce to 150m)", "VoidImmune")
+        CreateActionBtn("FPS BOOSTER (Max Performance)", function()
+            settings().Rendering.QualityLevel = 1
+            game.Lighting.GlobalShadows = false
+            for _, v in pairs(Workspace:GetDescendants()) do
+                if v:IsA("BasePart") and not v:IsA("Terrain") then
+                    v.Material = Enum.Material.SmoothPlastic
+                    v.Reflectance = 0
+                elseif v:IsA("Decal") or v:IsA("Texture") or v:IsA("ParticleEmitter") or v:IsA("Trail") then
+                    v:Destroy()
+                end
+            end
+            game.Lighting:ClearAllChildren()
+            SendNotification("FPS MAXIMIZED!")
+        end, false)
+        CreateToggle("CHAT SPAMMER (Safe Rate-Limit)", "SpamChat")
+        CreateTextBox("Type your spam text here...")
+        CreateToggle("AUTO RESPAWN", "AutoRespawn")
+        CreateActionBtn("SERVER HOP", function() Features.ServerHop = true end, false)
+    end
+    task.wait(0.05)
+    ContentFrame.CanvasSize = UDim2.new(0, 0, 0, ListLayout.AbsoluteContentSize.Y + 20)
+end
+
+local function CreateTabButton(name, layoutOrder)
+    local TabBtn = Instance.new("TextButton", Sidebar)
+    TabBtn.Size = UDim2.new(1, -10, 0, 35)
+    TabBtn.Position = UDim2.new(0, 5, 0, 50 + (layoutOrder * 42))
+    TabBtn.BackgroundColor3 = Color3.fromRGB(25, 20, 25)
+    TabBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
+    TabBtn.Text = name
+    TabBtn.TextSize = 14
+    TabBtn.Font = Enum.Font.GothamBold
+    TabBtn.BorderSizePixel = 0
+    Instance.new("UICorner", TabBtn).CornerRadius = UDim.new(0, 4)
+    TabBtn.MouseButton1Click:Connect(function() RenderTab(name) end)
+end
+
+CreateTabButton("Combat", 0)
+CreateTabButton("Movement", 1)
+CreateTabButton("Teleport", 2)
+CreateTabButton("Visuals", 3)
+CreateTabButton("Exploits", 4)
+RenderTab("Combat")
+
+-- ==========================================
+-- 4. NUCLEAR INVISIBLE & AUTO-RESET (DEATH)
 -- ==========================================
 local invisChar, invisHum, invisRoot
 local invisible = false
@@ -110,19 +442,11 @@ local function SetupInvisible()
     end)
 end
 
-local function ToggleNuclearInvisible(state)
-    invisible = state
-    for _, part in pairs(invisParts) do
-        pcall(function() if part:IsA("BasePart") then part.Transparency = invisible and 0.7 or 0 end end)
-    end
-end
-
 RunService.Heartbeat:Connect(function()
     if invisible and invisChar and invisRoot and invisHum and invisHum.Health > 0 then
         local cf = invisRoot.CFrame
         local camOffset = invisHum.CameraOffset
         local hidden = cf * CFrame.new(0, -200000, 0)
-        
         invisRoot.CFrame = hidden
         invisHum.CameraOffset = hidden:ToObjectSpace(CFrame.new(cf.Position)).Position
         RunService.RenderStepped:Wait()
@@ -133,225 +457,19 @@ end)
 
 LocalPlayer.CharacterAdded:Connect(function()
     invisible = false
+    Features.SkyCamp = false
+    _G.SavedSkyPos = nil
+    if _G.SkyBasePart then
+        _G.SkyBasePart:Destroy()
+        _G.SkyBasePart = nil
+    end
     task.wait(1)
     SetupInvisible()
 end)
 SetupInvisible()
 
 -- ==========================================
--- 3. GUI SYSTEM & CONFIGURATION
--- ==========================================
-local MenuOpen = true
-_G.SpamText = "iLoVe DeAtH v9.0 is DOMINATING THIS SERVER!"
-
-local Features = {
-    KillAura = false, AimLock = false, TriggerBot = false, AutoClicker = false, GunMod = false, Magnet = false, Hitbox = false,
-    SpeedHack = false, Noclip = false, InfJump = false, Spinbot = false, Fly = false,
-    TpToClosest = false, ClickTP = false, BringEnemies = false, AnchorSpawn = false,
-    ESP = false, Tracers = false, Fullbright = false, NoFog = false, Chams = false,
-    AntiAim = false, SpamChat = false, FpsBooster = false, ServerHop = false, AutoRespawn = false, VoidImmune = false, Invisible = false
-}
-
-local MagnetLimit = 6
-local BaseHeadSizeV = Vector3.new(1.2, 1.2, 1.2)
-local HitboxSize = 15
-
-if ProtectGui():FindFirstChild("iLoVeDeAtH_v9") then ProtectGui().iLoVeDeAtH_v9:Destroy() end
-
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "iLoVeDeAtH_v9"
-ScreenGui.ResetOnSpawn = false
-ScreenGui.Parent = ProtectGui()
-
-local MainFrame = Instance.new("Frame", ScreenGui)
-MainFrame.Size = UDim2.new(0, 480, 0, 450)
-MainFrame.Position = UDim2.new(0.5, -240, 0.5, -225)
-MainFrame.BackgroundColor3 = Color3.fromRGB(15, 10, 15)
-MainFrame.BorderSizePixel = 0
-MainFrame.Active = true
-MainFrame.Draggable = true
-Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 8)
-local MainStroke = Instance.new("UIStroke", MainFrame)
-MainStroke.Color = Color3.fromRGB(220, 0, 0)
-MainStroke.Thickness = 2
-
-local Sidebar = Instance.new("Frame", MainFrame)
-Sidebar.Size = UDim2.new(0, 130, 1, 0)
-Sidebar.BackgroundColor3 = Color3.fromRGB(10, 5, 10)
-Sidebar.BorderSizePixel = 0
-Instance.new("UICorner", Sidebar).CornerRadius = UDim.new(0, 8)
-
-local TitleText = Instance.new("TextLabel", Sidebar)
-TitleText.Size = UDim2.new(1, 0, 0, 45)
-TitleText.Text = "DEATH v9.0"
-TitleText.TextColor3 = Color3.fromRGB(255, 0, 0)
-TitleText.TextSize = 20
-TitleText.Font = Enum.Font.GothamBlack
-TitleText.BackgroundTransparency = 1
-
-local ContentFrame = Instance.new("ScrollingFrame", MainFrame)
-ContentFrame.Size = UDim2.new(1, -145, 1, -20)
-ContentFrame.Position = UDim2.new(0, 138, 0, 10)
-ContentFrame.BackgroundTransparency = 1
-ContentFrame.BorderSizePixel = 0
-ContentFrame.ScrollBarThickness = 4
-ContentFrame.ScrollBarImageColor3 = Color3.fromRGB(220, 0, 0)
-
-local ListLayout = Instance.new("UIListLayout", ContentFrame)
-ListLayout.Padding = UDim.new(0, 8)
-ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-
-local function ClearContent()
-    for _, child in pairs(ContentFrame:GetChildren()) do
-        if child:IsA("TextButton") or child:IsA("TextBox") then child:Destroy() end
-    end
-end
-
-local function SendNotification(msg)
-    pcall(function() Services.StarterGui:SetCore("SendNotification", { Title = "DEATH v9.0"; Text = msg; Duration = 2; }) end)
-end
-
-local RenderTab
-local function CreateToggle(text, key)
-    local Btn = Instance.new("TextButton", ContentFrame)
-    Btn.Size = UDim2.new(1, -10, 0, 35)
-    Btn.BorderSizePixel = 0
-    Btn.Font = Enum.Font.GothamBold
-    Btn.TextSize = 12
-    Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 4)
-
-    local function UpdateVisuals()
-        if Features[key] then
-            Btn.Text = ">> " .. text .. " <<"
-            Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-            Btn.BackgroundColor3 = Color3.fromRGB(180, 0, 0)
-        else
-            Btn.Text = "[ OFF ]  " .. text
-            Btn.TextColor3 = Color3.fromRGB(160, 160, 160)
-            Btn.BackgroundColor3 = Color3.fromRGB(25, 20, 25)
-        end
-    end
-    UpdateVisuals()
-    Btn.MouseButton1Click:Connect(function()
-        Features[key] = not Features[key]
-        UpdateVisuals()
-        if key == "Invisible" then ToggleNuclearInvisible(Features[key]) end
-    end)
-end
-
-local function CreateActionBtn(text, callback, isRage)
-    local Btn = Instance.new("TextButton", ContentFrame)
-    Btn.Size = UDim2.new(1, -10, 0, 35)
-    Btn.BorderSizePixel = 0
-    Btn.Font = Enum.Font.GothamBlack
-    Btn.TextSize = 13
-    Btn.Text = text
-    Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Btn.BackgroundColor3 = isRage and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(50, 50, 50)
-    Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 4)
-    if isRage then
-        local stroke = Instance.new("UIStroke", Btn)
-        stroke.Color = Color3.fromRGB(255, 255, 255)
-        stroke.Thickness = 1
-    end
-    Btn.MouseButton1Click:Connect(callback)
-end
-
-local function CreateTextBox(placeholder)
-    local Box = Instance.new("TextBox", ContentFrame)
-    Box.Size = UDim2.new(1, -10, 0, 35)
-    Box.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-    Box.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Box.Font = Enum.Font.Gotham
-    Box.TextSize = 12
-    Box.PlaceholderText = placeholder
-    Box.Text = _G.SpamText
-    Instance.new("UICorner", Box).CornerRadius = UDim.new(0, 4)
-    Box.FocusLost:Connect(function() _G.SpamText = Box.Text end)
-end
-
-RenderTab = function(tabName)
-    ClearContent()
-    if tabName == "Combat" then
-        CreateActionBtn("🔥 RAGE MODE (ENABLE ALL) 🔥", function()
-            local rageList = {"Hitbox", "ESP", "Tracers", "TriggerBot", "Magnet", "SpeedHack", "InfJump", "Fullbright", "NoFog", "VoidImmune", "Invisible"}
-            for _, v in ipairs(rageList) do Features[v] = true end
-            ToggleNuclearInvisible(true)
-            SendNotification("OMNI RAGE ACTIVATED!")
-            RenderTab("Combat")
-        end, true)
-        CreateToggle("AIMLOCK (180° INSTANT AIM)", "AimLock")
-        CreateToggle("SAFE MAGNET (Silent Aim)", "Magnet")
-        CreateToggle("HEAD HITBOX (15x Size)", "Hitbox")
-        CreateToggle("TRIGGERBOT (UNIVERSAL CLICK)", "TriggerBot")
-        CreateToggle("AUTO CLICKER (Hold to Spam)", "AutoClicker")
-        CreateToggle("KILL AURA (Auto Attack Nearby)", "KillAura")
-        CreateToggle("GUN MOD (Old Games Only)", "GunMod")
-    elseif tabName == "Movement" then
-        CreateToggle("UNIVERSAL SPEEDHACK (CFrame Bypass)", "SpeedHack")
-        CreateToggle("SPINBOT (Tilt 45°, Safe Cam)", "Spinbot")
-        CreateToggle("INFINITE JUMP", "InfJump")
-        CreateToggle("NOCLIP", "Noclip")
-        CreateToggle("UNIVERSAL FLY (BodyVelocity)", "Fly")
-    elseif tabName == "Teleport" then
-        CreateToggle("TP TO CLOSEST (Press X)", "TpToClosest")
-        CreateToggle("CLICK TP (Ctrl + Click)", "ClickTP")
-        CreateToggle("BRING ENEMIES", "BringEnemies")
-    elseif tabName == "Visuals" then
-        CreateToggle("ESP BOX & NAME (Universal Drawing)", "ESP")
-        CreateToggle("TRACERS (Lines)", "Tracers")
-        CreateToggle("CHAMS (Wallhack)", "Chams")
-        CreateToggle("FULLBRIGHT", "Fullbright")
-        CreateToggle("NO FOG", "NoFog")
-    elseif tabName == "Exploits" then
-        CreateToggle("GOD INVISIBLE (NuclearBobo)", "Invisible")
-        CreateToggle("VOID IMMUNITY (Bounce to 150m)", "VoidImmune")
-        CreateActionBtn("FPS BOOSTER (Max Performance)", function()
-            settings().Rendering.QualityLevel = 1
-            game.Lighting.GlobalShadows = false
-            for _, v in pairs(Workspace:GetDescendants()) do
-                if v:IsA("BasePart") and not v:IsA("Terrain") then
-                    v.Material = Enum.Material.SmoothPlastic
-                    v.Reflectance = 0
-                elseif v:IsA("Decal") or v:IsA("Texture") or v:IsA("ParticleEmitter") or v:IsA("Trail") then
-                    v:Destroy()
-                end
-            end
-            game.Lighting:ClearAllChildren()
-            SendNotification("FPS MAXIMIZED!")
-        end, false)
-        CreateToggle("CHAT SPAMMER (Super Fast)", "SpamChat")
-        CreateTextBox("Type your spam text here...")
-        CreateToggle("AUTO RESPAWN", "AutoRespawn")
-        CreateActionBtn("SERVER HOP", function() Features.ServerHop = true end, false)
-    end
-    task.wait(0.05)
-    ContentFrame.CanvasSize = UDim2.new(0, 0, 0, ListLayout.AbsoluteContentSize.Y + 20)
-end
-
-local function CreateTabButton(name, layoutOrder)
-    local TabBtn = Instance.new("TextButton", Sidebar)
-    TabBtn.Size = UDim2.new(1, -10, 0, 35)
-    TabBtn.Position = UDim2.new(0, 5, 0, 50 + (layoutOrder * 42))
-    TabBtn.BackgroundColor3 = Color3.fromRGB(25, 20, 25)
-    TabBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
-    TabBtn.Text = name
-    TabBtn.TextSize = 14
-    TabBtn.Font = Enum.Font.GothamBold
-    TabBtn.BorderSizePixel = 0
-    Instance.new("UICorner", TabBtn).CornerRadius = UDim.new(0, 4)
-    TabBtn.MouseButton1Click:Connect(function() RenderTab(name) end)
-end
-
-CreateTabButton("Combat", 0)
-CreateTabButton("Movement", 1)
-CreateTabButton("Teleport", 2)
-CreateTabButton("Visuals", 3)
-CreateTabButton("Exploits", 4)
-RenderTab("Combat")
-
--- ==========================================
--- 4. CORE ESP DRAWING (BO HUB 100%)
+-- 5. CORE ESP DRAWING (BO HUB 100%)
 -- ==========================================
 local ESPData = {}
 local AllEntities = {}
@@ -411,14 +529,10 @@ local function ClearESP(c)
     end
 end
 
--- ==========================================
--- 5. UTILS LOGIC (WALLCHECK & CLOSEST)
--- ==========================================
 local function GetClosest180()
     local closest = nil
     local minDist = math.huge
     local center = Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2)
-    
     for _, p in pairs(Players:GetPlayers()) do
         if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("Head") then
             local hum = p.Character:FindFirstChildOfClass("Humanoid")
@@ -434,19 +548,8 @@ local function GetClosest180()
     return closest
 end
 
-local function IsVisible(targetPart)
-    local origin = Camera.CFrame.Position
-    local direction = (targetPart.Position - origin).Unit * (targetPart.Position - origin).Magnitude
-    local rayParams = RaycastParams.new()
-    rayParams.FilterType = Enum.RaycastFilterType.Blacklist
-    rayParams.FilterDescendantsInstances = {LocalPlayer.Character, Camera}
-    rayParams.IgnoreWater = true
-    local result = Workspace:Raycast(origin, direction, rayParams)
-    return result == nil or result.Instance:IsDescendantOf(targetPart.Parent)
-end
-
 -- ==========================================
--- 6. INPUT & HOTKEYS
+-- 6. INPUT & HOTKEYS (Z - OVERWATCH DYNAMIC)
 -- ==========================================
 InputService.JumpRequest:Connect(function()
     if Features.InfJump and LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
@@ -456,6 +559,46 @@ end)
 
 InputService.InputBegan:Connect(function(input, processed)
     if processed then return end
+    
+    if input.KeyCode == Enum.KeyCode.Z then
+        Features.SkyCamp = not Features.SkyCamp
+        local char = LocalPlayer.Character
+        local root = char and char:FindFirstChild("HumanoidRootPart")
+        
+        if Features.SkyCamp then
+            if root then
+                if not _G.SavedSkyPos then _G.SavedSkyPos = root.CFrame end
+                local skyPos = _G.SavedSkyPos.Position + Vector3.new(0, _G.SkyCampHeight, 0)
+                
+                if not _G.SkyBasePart or not _G.SkyBasePart.Parent then
+                    _G.SkyBasePart = Instance.new("Part")
+                    _G.SkyBasePart.Size = Vector3.new(20000, 1, 20000)
+                    _G.SkyBasePart.Anchored = true
+                    pcall(function() _G.SkyBasePart.CanQuery = false end)
+                    _G.SkyBasePart.Transparency = 0.7
+                    _G.SkyBasePart.Material = Enum.Material.SmoothPlastic
+                    _G.SkyBasePart.Color = Color3.fromRGB(0, 255, 255)
+                end
+                _G.SkyBasePart.Parent = char
+                _G.SkyBasePart.Position = skyPos
+                root.Velocity = Vector3.zero
+                root.CFrame = CFrame.new(skyPos + Vector3.new(0, 4, 0))
+                SendNotification("☁️ SKY CAMP ENABLED ☁️ (".._G.SkyCampHeight.."m)")
+            end
+        else
+            if root and _G.SavedSkyPos then
+                root.Velocity = Vector3.zero
+                root.CFrame = _G.SavedSkyPos
+                _G.SavedSkyPos = nil
+            end
+            if _G.SkyBasePart then
+                _G.SkyBasePart:Destroy()
+                _G.SkyBasePart = nil
+            end
+            SendNotification("☁️ SKY CAMP DISABLED ☁️")
+        end
+    end
+
     if input.KeyCode == Enum.KeyCode.X then
         if Features.TpToClosest then
             local closest = nil
@@ -475,15 +618,26 @@ InputService.InputBegan:Connect(function(input, processed)
             local char = LocalPlayer.Character
             if closest and char and char:FindFirstChild("HumanoidRootPart") then
                 char.HumanoidRootPart.CFrame = closest.HumanoidRootPart.CFrame * CFrame.new(0, 0, 3)
+                if Features.SkyCamp then
+                    Features.SkyCamp = false
+                    if _G.SkyBasePart then
+                        _G.SkyBasePart:Destroy()
+                        _G.SkyBasePart = nil
+                    end
+                    _G.SavedSkyPos = nil
+                end
             end
         end
     end
+
     if Features.ClickTP and input.UserInputType == Enum.UserInputType.MouseButton1 and InputService:IsKeyDown(Enum.KeyCode.LeftControl) then
         local Mouse = LocalPlayer:GetMouse()
         if Mouse.Target and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
             LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(Mouse.Hit.p + Vector3.new(0, 3, 0))
         end
     end
+    
+    -- Insert Key to Toggle Menu
     if input.KeyCode == Enum.KeyCode.Insert then
         MenuOpen = not MenuOpen
         MainFrame.Visible = MenuOpen
@@ -491,7 +645,7 @@ InputService.InputBegan:Connect(function(input, processed)
 end)
 
 -- ==========================================
--- 7. RENDER LOOP (ESP, AIM, MAGNET)
+-- 7. RENDER LOOP (ESP, AIM, MAGNET, TORNADO SPIN)
 -- ==========================================
 local MagnetAnchorPos = nil 
 local MagnetTarget = nil
@@ -519,7 +673,6 @@ RunService.RenderStepped:Connect(function()
     local Char = LocalPlayer.Character
     local isInteracting = InputService:IsMouseButtonPressed(0) or InputService:IsMouseButtonPressed(1)
 
-    -- ESP DRAWING
     for _, c in ipairs(AllEntities) do if not ESPData[c] and c.Parent then InitESP(c) end end
     for c, _ in pairs(ESPData) do 
         local h = c:FindFirstChildOfClass("Humanoid")
@@ -536,23 +689,19 @@ RunService.RenderStepped:Connect(function()
                 local hp, onScreen = Camera:WorldToViewportPoint(hd.Position)
                 local rp, _ = Camera:WorldToViewportPoint(r.Position)
                 local dist = (Camera.CFrame.Position - r.Position).Magnitude
-                
                 if onScreen then 
                     local m = (Vector2.new(hp.X, hp.Y) - center).Magnitude
                     if m < sd then sd = m tc = c end 
                 end
-
                 if onScreen and Features.ESP then
                     local bh = math.abs(hp.Y - rp.Y) * 1.5
                     local bw = bh * 0.6
                     local tl = Vector2.new(hp.X - bw/2, hp.Y - bh * 0.2)
                     local br = Vector2.new(hp.X + bw/2, rp.Y + bh * 0.2)
-                    
                     o.Box.Visible = true; o.Box.Size = Vector2.new(bw, br.Y - tl.Y); o.Box.Position = tl
                     o.Tracer.Visible = Features.Tracers; o.Tracer.From = top; o.Tracer.To = Vector2.new(hp.X, hp.Y)
                     o.Name.Visible = true; o.Name.Position = Vector2.new(hp.X, tl.Y - 20); o.Name.Text = o.DisplayName
                     o.Distance.Visible = true; o.Distance.Position = Vector2.new(hp.X, br.Y + 5); o.Distance.Text = math.floor(dist).."m"
-                    
                     local hpct = math.clamp(h.Health / h.MaxHealth, 0, 1)
                     local bah = (br.Y - tl.Y)
                     o.HealthBg.Visible = true; o.HealthBg.From = Vector2.new(tl.X - 5, tl.Y); o.HealthBg.To = Vector2.new(tl.X - 5, br.Y)
@@ -567,7 +716,6 @@ RunService.RenderStepped:Connect(function()
         end
     end
 
-    -- AIMLOCK & MAGNET
     local Target = GetClosest180()
     if Target then
         local tHead = Target:FindFirstChild("Head")
@@ -587,7 +735,6 @@ RunService.RenderStepped:Connect(function()
                 local projectionDistance = (MagnetAnchorPos - camPos):Dot(lookVec)
                 local pointOnRay = camPos + (lookVec * projectionDistance)
                 local diff = pointOnRay - MagnetAnchorPos
-
                 if diff.Magnitude > MagnetLimit then diff = diff.Unit * MagnetLimit end
                 tHead.CFrame = CFrame.new(MagnetAnchorPos + diff)
                 tHead.Velocity = Vector3.zero
@@ -601,23 +748,23 @@ RunService.RenderStepped:Connect(function()
         MagnetTarget = nil
     end
 
-    -- SPINBOT (SAFE CAM - TILT 45°)
     local rootJoint = Char and (Char:FindFirstChild("LowerTorso") and Char.LowerTorso:FindFirstChild("Root") or Char:FindFirstChild("HumanoidRootPart") and Char.HumanoidRootPart:FindFirstChild("RootJoint"))
     if Features.Spinbot and rootJoint then
         if not origC0 then origC0 = rootJoint.C0 end
-        local spinAngle = (tick() * 1500) % 360 
-        rootJoint.C0 = origC0 * CFrame.Angles(math.rad(45), math.rad(spinAngle), 0)
+        local orbitAngle = math.rad((tick() * 1200) % 360) 
+        local selfAngle = math.rad((tick() * 1800) % 360)
+        local pivot = CFrame.new(0, -3, 0)
+        rootJoint.C0 = origC0 * pivot * CFrame.Angles(0, orbitAngle, 0) * CFrame.Angles(math.rad(45), 0, 0) * pivot:Inverse() * CFrame.Angles(0, selfAngle, 0)
     else
         if origC0 and rootJoint then rootJoint.C0 = origC0; origC0 = nil end
     end
 end)
 
 -- ==========================================
--- 8. PHYSICS & UNIVERSAL LOOP (HEARTBEAT)
+-- 8. PHYSICS & TRIGGERBOT (V9.6 LOGIC)
 -- ==========================================
 local lastSpam = 0
 local lastTriggerClick = 0
-local lastAutoClick = 0
 
 RunService.Heartbeat:Connect(function()
     local Char = LocalPlayer.Character
@@ -625,12 +772,10 @@ RunService.Heartbeat:Connect(function()
     local Hum = Char and Char:FindFirstChildOfClass("Humanoid")
     local isShooting = InputService:IsMouseButtonPressed(0) or InputService:IsMouseButtonPressed(1)
 
-    -- HEAD HITBOX (BO HUB CORE) & CHAMS
     for _, player in ipairs(Players:GetPlayers()) do
         if player ~= LocalPlayer and player.Character then
             local humE = player.Character:FindFirstChildOfClass("Humanoid")
             local headE = player.Character:FindFirstChild("Head")
-            
             if humE and headE and humE.Health > 0 and IsEnemy(player.Character) then
                 if Features.Hitbox then
                     headE.Size = Vector3.new(HitboxSize, HitboxSize, HitboxSize)
@@ -644,7 +789,6 @@ RunService.Heartbeat:Connect(function()
                         headE.CustomPhysicalProperties = nil 
                     end
                 end
-
                 if Features.Chams then
                     if not player.Character:FindFirstChild("DeathChams") then
                         local Highlight = Instance.new("Highlight")
@@ -657,20 +801,10 @@ RunService.Heartbeat:Connect(function()
         end
     end
 
-    -- UNIVERSAL AUTO CLICKER
-    if Features.AutoClicker and isShooting then 
-        if tick() - lastAutoClick > 0.05 then
-            UniversalClick()
-            lastAutoClick = tick()
-        end
-    end
-
-    -- UNIVERSAL TRIGGER BOT (CÓ WALLCHECK)
     if Features.TriggerBot and not isShooting then
         local rayParams = RaycastParams.new()
         rayParams.FilterType = Enum.RaycastFilterType.Blacklist
         rayParams.FilterDescendantsInstances = {Char, Camera}
-        
         local result = Workspace:Raycast(Camera.CFrame.Position, Camera.CFrame.LookVector * 1500, rayParams)
         
         if result and result.Instance then
@@ -684,7 +818,6 @@ RunService.Heartbeat:Connect(function()
         end
     end
 
-    -- UNIVERSAL KILL AURA
     if Features.KillAura and Root then
         for _, p in pairs(Players:GetPlayers()) do
             if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
@@ -715,15 +848,13 @@ RunService.Heartbeat:Connect(function()
         end
     end
 
-    -- UNIVERSAL SPEEDHACK (CFrame Bypass Anti-Cheat)
     if Features.SpeedHack and Hum and Root then 
         local moveDir = Hum.MoveDirection
         if moveDir.Magnitude > 0 then
-            Root.CFrame = Root.CFrame + (moveDir * 1.2) -- Tương đương Speed = 80
+            Root.CFrame = Root.CFrame + (moveDir * 1.2)
         end
     end
     
-    -- UNIVERSAL FLY (BodyVelocity)
     if Features.Fly and Root then
         local Dir = Vector3.new()
         local camCF = Camera.CFrame
@@ -731,7 +862,6 @@ RunService.Heartbeat:Connect(function()
         if InputService:IsKeyDown(Enum.KeyCode.S) then Dir = Dir - camCF.LookVector end
         if InputService:IsKeyDown(Enum.KeyCode.A) then Dir = Dir - camCF.RightVector end
         if InputService:IsKeyDown(Enum.KeyCode.D) then Dir = Dir + camCF.RightVector end
-        
         if not Root:FindFirstChild("OmniFly") then
             local bv = Instance.new("BodyVelocity", Root)
             bv.Name = "OmniFly"
@@ -749,26 +879,18 @@ RunService.Heartbeat:Connect(function()
     end
     if Features.NoFog then game:GetService("Lighting").FogEnd = 999999 end
 
-    -- VOID IMMUNITY (NẢY LÊN 150M)
     if Features.VoidImmune and Root and Root.Position.Y < -50 then
         Root.Velocity = Vector3.zero
         Root.CFrame = CFrame.new(Root.Position.X, 150, Root.Position.Z)
     end
 
-    -- SAFE SPAM CHAT (ANTI-RATE LIMIT BYPASS)
-    if Features.SpamChat and tick() - lastSpam > 2.5 then -- 2.5s là tốc độ nhanh nhất không bị khóa mõm
-        -- Tạo một chuỗi mã ngẫu nhiên chống bộ lọc trùng lặp của Roblox
+    if Features.SpamChat and tick() - lastSpam > 2.5 then
         local randomCode = " | ID:" .. tostring(math.random(1000, 9999))
         local bypassMsg = _G.SpamText .. randomCode
-        
-        -- Gửi tin nhắn
         pcall(function() ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer(bypassMsg, "All") end)
         pcall(function() TextChatService.TextChannels.RBXGeneral:SendAsync(bypassMsg) end)
-        
         lastSpam = tick()
     end
-    
-    if Features.AutoRespawn and Hum and Hum.Health <= 0 then pcall(function() LocalPlayer:LoadCharacter() end) end
 end)
 
-print("iLoVe DeAtH v9.0 (UNIVERSAL OMNI) Loaded Successfully!")
+print("iLoVe DeAtH v11.0 (CROSS-PLATFORM EDITION) Loaded Successfully!")
