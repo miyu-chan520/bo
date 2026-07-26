@@ -1,4 +1,4 @@
--- === iLoVe DeAtH // ULTIMATE DESTROYER v11.0 (CROSS-PLATFORM EDITION) ===
+-- === iLoVe DeAtH // ULTIMATE DESTROYER v12.3 (ANTI-STUCK PATCH) ===
 
 local Services = setmetatable({}, {__index = function(_, k) return game:GetService(k) end})
 local Players = Services.Players
@@ -20,23 +20,26 @@ end
 -- 0. CROSS-PLATFORM CLICK ENGINE (VIM + NATIVE)
 -- ==========================================
 local function UniversalClick()
-    pcall(function()
-        -- Virtual Input Manager for cross-platform reliability
-        local vim = game:GetService("VirtualInputManager")
-        if vim then
-            vim:SendMouseButtonEvent(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2, 0, true, game, 1)
-            task.wait()
-            vim:SendMouseButtonEvent(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2, 0, false, game, 1)
-        end
-        
-        -- Fallback for PC Executors
-        if type(mouse1click) == "function" then
-            mouse1click()
-        end
-        
-        -- Fallback for Classic Tools
-        local t = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Tool")
-        if t then t:Activate() end
+    task.spawn(function()
+        pcall(function()
+            local vim = game:GetService("VirtualInputManager")
+            if vim then
+                vim:SendMouseButtonEvent(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2, 0, true, game, 1)
+                task.wait(0.01)
+                vim:SendMouseButtonEvent(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2, 0, false, game, 1)
+            end
+            
+            if type(mouse1click) == "function" then
+                mouse1click()
+            end
+            
+            local t = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Tool")
+            if t then 
+                t:Activate() 
+                task.wait(0.01)
+                t:Deactivate()
+            end
+        end)
     end)
 end
 
@@ -84,13 +87,13 @@ DeepCleanup()
 -- 2. GLOBAL VARIABLES & GUI CONFIG
 -- ==========================================
 local MenuOpen = true
-_G.SpamText = "iLoVe DeAtH v11.0 is DOMINATING THIS SERVER!"
+_G.SpamText = "iLoVe DeAtH v12.3 is DOMINATING THIS SERVER!"
 _G.SavedSkyPos = nil
 _G.SkyBasePart = nil
 _G.SkyCampHeight = 40
 
 local Features = {
-    KillAura = false, AimLock = false, TriggerBot = false, GunMod = false, Magnet = false, Hitbox = false,
+    AimLock = false, TriggerBot = false, GunMod = false, Magnet = false, Hitbox = false,
     SpeedHack = false, Noclip = false, InfJump = false, Spinbot = false, Fly = false,
     TpToClosest = false, ClickTP = false, BringEnemies = false, AnchorSpawn = false, SkyCamp = false,
     ESP = false, Tracers = false, Fullbright = false, NoFog = false, Chams = false,
@@ -101,10 +104,10 @@ local MagnetLimit = 6
 local BaseHeadSizeV = Vector3.new(1.2, 1.2, 1.2)
 local HitboxSize = 15
 
-if ProtectGui():FindFirstChild("iLoVeDeAtH_v11") then ProtectGui().iLoVeDeAtH_v11:Destroy() end
+if ProtectGui():FindFirstChild("iLoVeDeAtH_v12") then ProtectGui().iLoVeDeAtH_v12:Destroy() end
 
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "iLoVeDeAtH_v11"
+ScreenGui.Name = "iLoVeDeAtH_v12"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = ProtectGui()
 
@@ -120,6 +123,7 @@ if InputService.TouchEnabled then
     MobileBtn.Text = "MENU"
     Instance.new("UICorner", MobileBtn).CornerRadius = UDim.new(1, 0)
     local Stroke = Instance.new("UIStroke", MobileBtn)
+    Stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     Stroke.Color = Color3.fromRGB(255, 0, 0)
     Stroke.Thickness = 2
     
@@ -141,6 +145,7 @@ MainFrame.Active = true
 MainFrame.Draggable = true
 Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 8)
 local MainStroke = Instance.new("UIStroke", MainFrame)
+MainStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 MainStroke.Color = Color3.fromRGB(220, 0, 0)
 MainStroke.Thickness = 2
 
@@ -152,7 +157,7 @@ Instance.new("UICorner", Sidebar).CornerRadius = UDim.new(0, 8)
 
 local TitleText = Instance.new("TextLabel", Sidebar)
 TitleText.Size = UDim2.new(1, 0, 0, 45)
-TitleText.Text = "DEATH v11.0"
+TitleText.Text = "DEATH v12.3"
 TitleText.TextColor3 = Color3.fromRGB(255, 0, 0)
 TitleText.TextSize = 18
 TitleText.Font = Enum.Font.GothamBlack
@@ -186,7 +191,7 @@ local function ClearContent()
 end
 
 local function SendNotification(msg)
-    pcall(function() Services.StarterGui:SetCore("SendNotification", { Title = "DEATH v11.0"; Text = msg; Duration = 2; }) end)
+    pcall(function() Services.StarterGui:SetCore("SendNotification", { Title = "DEATH v12.3"; Text = msg; Duration = 2; }) end)
 end
 
 -- ==========================================
@@ -215,7 +220,7 @@ local function CreateToggle(text, key)
     Btn.MouseButton1Click:Connect(function()
         Features[key] = not Features[key]
         UpdateVisuals()
-        if key == "Invisible" then ToggleNuclearInvisible(Features[key]) end
+        if key == "Invisible" and _G.ToggleGhostMode then _G.ToggleGhostMode(Features[key]) end
     end)
 end
 
@@ -227,12 +232,16 @@ local function CreateActionBtn(text, callback, isRage)
     Btn.TextSize = 12
     Btn.Text = text
     Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Btn.BackgroundColor3 = isRage and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(50, 50, 50)
+    Btn.BackgroundColor3 = isRage and Color3.fromRGB(210, 0, 0) or Color3.fromRGB(50, 50, 50)
     Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 4)
+    
     if isRage then
+        Btn.TextStrokeTransparency = 0
+        Btn.TextStrokeColor3 = Color3.fromRGB(100, 0, 0)
         local stroke = Instance.new("UIStroke", Btn)
-        stroke.Color = Color3.fromRGB(255, 255, 255)
-        stroke.Thickness = 1
+        stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+        stroke.Color = Color3.fromRGB(255, 100, 100)
+        stroke.Thickness = 2
     end
     Btn.MouseButton1Click:Connect(callback)
 end
@@ -315,17 +324,16 @@ local RenderTab
 RenderTab = function(tabName)
     ClearContent()
     if tabName == "Combat" then
-        CreateActionBtn("🔥 RAGE MODE (ENABLE ALL) 🔥", function()
+        CreateActionBtn("🔥 BRUTAL MODE (ENABLE ALL) 🔥", function()
             local rageList = {"ESP", "Tracers", "Chams", "Magnet", "SpeedHack", "InfJump", "GunMod", "Spinbot", "TpToClosest", "Fullbright", "NoFog"}
             for _, v in ipairs(rageList) do Features[v] = true end
-            SendNotification("OMNI RAGE ACTIVATED!")
+            SendNotification("BRUTAL MODE ACTIVATED!")
             RenderTab("Combat")
         end, true)
         CreateToggle("AIMLOCK (180° INSTANT AIM)", "AimLock")
         CreateToggle("SAFE MAGNET (Silent Aim)", "Magnet")
         CreateToggle("HEAD HITBOX (15x Size)", "Hitbox")
         CreateToggle("TRIGGERBOT (Warning: Some games might kick)", "TriggerBot")
-        CreateToggle("KILL AURA (Auto Attack Nearby)", "KillAura")
         CreateToggle("GUN MOD (Old Games Only)", "GunMod")
     elseif tabName == "Movement" then
         CreateToggle("UNIVERSAL SPEEDHACK (CFrame Bypass)", "SpeedHack")
@@ -358,7 +366,7 @@ RenderTab = function(tabName)
         CreateToggle("FULLBRIGHT", "Fullbright")
         CreateToggle("NO FOG", "NoFog")
     elseif tabName == "Exploits" then
-        CreateToggle("GOD INVISIBLE (NuclearBobo)", "Invisible")
+        CreateToggle("GHOST MODE (True Invisible)", "Invisible")
         CreateToggle("VOID IMMUNITY (Bounce to 150m)", "VoidImmune")
         CreateActionBtn("FPS BOOSTER (Max Performance)", function()
             settings().Rendering.QualityLevel = 1
@@ -405,58 +413,80 @@ CreateTabButton("Exploits", 4)
 RenderTab("Combat")
 
 -- ==========================================
--- 4. NUCLEAR INVISIBLE & AUTO-RESET (DEATH)
+-- 4. GHOST MODE CORE (100% ORIGINAL BO HUB LOGIC)
 -- ==========================================
 local invisChar, invisHum, invisRoot
-local invisible = false
+local ghostEnabled = false
 local invisParts = {}
-local invisConn
+local invisConn, invisHeartbeat
 
-local function SetupInvisible()
+local EXCLUDE_NAMES = {
+    ["HumanoidRootPart"] = true,
+    ["CollisionPart"] = true
+}
+
+local function SetupGhostCore()
     if invisConn then pcall(function() invisConn:Disconnect() end) end
+    if invisHeartbeat then pcall(function() invisHeartbeat:Disconnect() end) end
     invisParts = {}
+    
     invisChar = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
     invisHum = invisChar:WaitForChild("Humanoid")
     invisRoot = invisChar:WaitForChild("HumanoidRootPart")
 
     invisHum.Died:Once(function()
-        invisible = false
+        ghostEnabled = false
+        if Features["Invisible"] then Features["Invisible"] = false end
         for _, part in pairs(invisParts) do
             pcall(function() if part:IsA("BasePart") then part.Transparency = 0 end end)
         end
     end)
 
     for _, obj in pairs(invisChar:GetDescendants()) do
-        if obj:IsA("BasePart") and obj.Name ~= "HumanoidRootPart" and obj.Name ~= "CollisionPart" then
+        if obj:IsA("BasePart") and not EXCLUDE_NAMES[obj.Name] then
             table.insert(invisParts, obj)
-            if invisible then obj.Transparency = 0.7 end
+            if ghostEnabled then obj.Transparency = 0.7 end
         end
     end
 
     invisConn = invisChar.DescendantAdded:Connect(function(obj)
         task.wait()
-        if obj:IsA("BasePart") and obj.Name ~= "HumanoidRootPart" and obj.Name ~= "CollisionPart" then
+        if obj:IsA("BasePart") and not EXCLUDE_NAMES[obj.Name] then
             table.insert(invisParts, obj)
-            if invisible then obj.Transparency = 0.7 end
+            if ghostEnabled then obj.Transparency = 0.7 end
+        end
+    end)
+    
+    invisHeartbeat = RunService.Heartbeat:Connect(function()
+        if ghostEnabled and invisChar and invisRoot and invisHum and invisHum.Health > 0 then
+            local cf = invisRoot.CFrame
+            local camOffset = invisHum.CameraOffset
+            local hidden = cf * CFrame.new(0, -200000, 0)
+            
+            invisRoot.CFrame = hidden
+            invisHum.CameraOffset = hidden:ToObjectSpace(CFrame.new(cf.Position)).Position
+            
+            RunService.RenderStepped:Wait()
+            
+            invisRoot.CFrame = cf
+            invisHum.CameraOffset = camOffset
         end
     end)
 end
 
-RunService.Heartbeat:Connect(function()
-    if invisible and invisChar and invisRoot and invisHum and invisHum.Health > 0 then
-        local cf = invisRoot.CFrame
-        local camOffset = invisHum.CameraOffset
-        local hidden = cf * CFrame.new(0, -200000, 0)
-        invisRoot.CFrame = hidden
-        invisHum.CameraOffset = hidden:ToObjectSpace(CFrame.new(cf.Position)).Position
-        RunService.RenderStepped:Wait()
-        invisRoot.CFrame = cf
-        invisHum.CameraOffset = camOffset
+_G.ToggleGhostMode = function(state)
+    ghostEnabled = state
+    for _, part in pairs(invisParts) do
+        pcall(function()
+            if part:IsA("BasePart") then
+                part.Transparency = ghostEnabled and 0.7 or 0
+            end
+        end)
     end
-end)
+end
 
 LocalPlayer.CharacterAdded:Connect(function()
-    invisible = false
+    ghostEnabled = false
     Features.SkyCamp = false
     _G.SavedSkyPos = nil
     if _G.SkyBasePart then
@@ -464,12 +494,12 @@ LocalPlayer.CharacterAdded:Connect(function()
         _G.SkyBasePart = nil
     end
     task.wait(1)
-    SetupInvisible()
+    SetupGhostCore()
 end)
-SetupInvisible()
+SetupGhostCore()
 
 -- ==========================================
--- 5. CORE ESP DRAWING (BO HUB 100%)
+-- 5. CORE ESP DRAWING
 -- ==========================================
 local ESPData = {}
 local AllEntities = {}
@@ -637,10 +667,11 @@ InputService.InputBegan:Connect(function(input, processed)
         end
     end
     
-    -- Insert Key to Toggle Menu
     if input.KeyCode == Enum.KeyCode.Insert then
         MenuOpen = not MenuOpen
-        MainFrame.Visible = MenuOpen
+        if ScreenGui:FindFirstChild("MainFrame") then
+            ScreenGui.MainFrame.Visible = MenuOpen
+        end
     end
 end)
 
@@ -761,10 +792,11 @@ RunService.RenderStepped:Connect(function()
 end)
 
 -- ==========================================
--- 8. PHYSICS & TRIGGERBOT (V9.6 LOGIC)
+-- 8. PHYSICS & ANTI-STUCK TRIGGERBOT
 -- ==========================================
 local lastSpam = 0
 local lastTriggerClick = 0
+local wasTriggering = false -- CỜ BÁO ĐỂ ÉP NHẢ CHUỘT (CHỐNG KẸT)
 
 RunService.Heartbeat:Connect(function()
     local Char = LocalPlayer.Character
@@ -801,30 +833,38 @@ RunService.Heartbeat:Connect(function()
         end
     end
 
+    -- TRIGGER BOT GHOST VỚI ANTI-STUCK (CHỐNG KẸT SÚNG KHI LIA TÂM RA NGOÀI)
     if Features.TriggerBot and not isShooting then
         local rayParams = RaycastParams.new()
         rayParams.FilterType = Enum.RaycastFilterType.Blacklist
         rayParams.FilterDescendantsInstances = {Char, Camera}
         local result = Workspace:Raycast(Camera.CFrame.Position, Camera.CFrame.LookVector * 1500, rayParams)
         
+        local isAimingAtEnemy = false
         if result and result.Instance then
             local hitModel = result.Instance:FindFirstAncestorOfClass("Model")
             if hitModel and hitModel:FindFirstChild("Humanoid") and hitModel:FindFirstChild("Humanoid").Health > 0 and IsEnemy(hitModel) then
-                if tick() - lastTriggerClick > 0.05 then 
-                    UniversalClick()
-                    lastTriggerClick = tick()
-                end
+                isAimingAtEnemy = true
             end
         end
-    end
 
-    if Features.KillAura and Root then
-        for _, p in pairs(Players:GetPlayers()) do
-            if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
-                if (Root.Position - p.Character.HumanoidRootPart.Position).Magnitude <= 20 and IsEnemy(p.Character) then
-                    UniversalClick()
-                end
+        if isAimingAtEnemy then
+            wasTriggering = true
+            if tick() - lastTriggerClick > 0.05 then 
+                UniversalClick()
+                lastTriggerClick = tick()
             end
+        elseif wasTriggering then
+            wasTriggering = false
+            -- ÉP NHẢ CHUỘT VÀ NGỪNG KÍCH HOẠT VŨ KHÍ NGUYÊN TỬ KHI TÂM RỜI ĐỊCH
+            task.spawn(function()
+                pcall(function()
+                    local vim = game:GetService("VirtualInputManager")
+                    if vim then vim:SendMouseButtonEvent(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2, 0, false, game, 1) end
+                    local t = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Tool")
+                    if t then t:Deactivate() end
+                end)
+            end)
         end
     end
 
@@ -893,4 +933,4 @@ RunService.Heartbeat:Connect(function()
     end
 end)
 
-print("iLoVe DeAtH v11.0 (CROSS-PLATFORM EDITION) Loaded Successfully!")
+print("iLoVe DeAtH v12.3 (ANTI-STUCK PATCH) Loaded Successfully!")
