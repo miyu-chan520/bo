@@ -1,4 +1,4 @@
--- === iLoVe DeAtH // ULTIMATE DESTROYER v12.3 (ANTI-STUCK PATCH) ===
+-- === iLoVe DeAtH // ULTIMATE DESTROYER v12.4 (AIM ROTATION PATCH) ===
 
 local Services = setmetatable({}, {__index = function(_, k) return game:GetService(k) end})
 local Players = Services.Players
@@ -87,7 +87,7 @@ DeepCleanup()
 -- 2. GLOBAL VARIABLES & GUI CONFIG
 -- ==========================================
 local MenuOpen = true
-_G.SpamText = "iLoVe DeAtH v12.3 is DOMINATING THIS SERVER!"
+_G.SpamText = "iLoVe DeAtH v12.4 is DOMINATING THIS SERVER!"
 _G.SavedSkyPos = nil
 _G.SkyBasePart = nil
 _G.SkyCampHeight = 40
@@ -157,7 +157,7 @@ Instance.new("UICorner", Sidebar).CornerRadius = UDim.new(0, 8)
 
 local TitleText = Instance.new("TextLabel", Sidebar)
 TitleText.Size = UDim2.new(1, 0, 0, 45)
-TitleText.Text = "DEATH v12.3"
+TitleText.Text = "DEATH v12.4"
 TitleText.TextColor3 = Color3.fromRGB(255, 0, 0)
 TitleText.TextSize = 18
 TitleText.Font = Enum.Font.GothamBlack
@@ -191,7 +191,7 @@ local function ClearContent()
 end
 
 local function SendNotification(msg)
-    pcall(function() Services.StarterGui:SetCore("SendNotification", { Title = "DEATH v12.3"; Text = msg; Duration = 2; }) end)
+    pcall(function() Services.StarterGui:SetCore("SendNotification", { Title = "DEATH v12.4"; Text = msg; Duration = 2; }) end)
 end
 
 -- ==========================================
@@ -754,6 +754,13 @@ RunService.RenderStepped:Connect(function()
         if tHead and tRoot then
             if Features.AimLock and isInteracting then
                 Camera.CFrame = CFrame.lookAt(Camera.CFrame.Position, tHead.Position)
+                
+                -- [THÊM MỚI]: Xoay cơ thể nhân vật hướng về phía đích
+                local myRoot = Char and Char:FindFirstChild("HumanoidRootPart")
+                if myRoot then
+                    myRoot.CFrame = CFrame.lookAt(myRoot.Position, Vector3.new(tHead.Position.X, myRoot.Position.Y, tHead.Position.Z))
+                end
+                
                 MagnetAnchorPos = nil
                 MagnetTarget = nil
             elseif Features.Magnet and isInteracting then
@@ -796,7 +803,7 @@ end)
 -- ==========================================
 local lastSpam = 0
 local lastTriggerClick = 0
-local wasTriggering = false -- CỜ BÁO ĐỂ ÉP NHẢ CHUỘT (CHỐNG KẸT)
+local wasTriggering = false
 
 RunService.Heartbeat:Connect(function()
     local Char = LocalPlayer.Character
@@ -833,7 +840,6 @@ RunService.Heartbeat:Connect(function()
         end
     end
 
-    -- TRIGGER BOT GHOST VỚI ANTI-STUCK (CHỐNG KẸT SÚNG KHI LIA TÂM RA NGOÀI)
     if Features.TriggerBot and not isShooting then
         local rayParams = RaycastParams.new()
         rayParams.FilterType = Enum.RaycastFilterType.Blacklist
@@ -856,7 +862,6 @@ RunService.Heartbeat:Connect(function()
             end
         elseif wasTriggering then
             wasTriggering = false
-            -- ÉP NHẢ CHUỘT VÀ NGỪNG KÍCH HOẠT VŨ KHÍ NGUYÊN TỬ KHI TÂM RỜI ĐỊCH
             task.spawn(function()
                 pcall(function()
                     local vim = game:GetService("VirtualInputManager")
@@ -933,4 +938,4 @@ RunService.Heartbeat:Connect(function()
     end
 end)
 
-print("iLoVe DeAtH v12.3 (ANTI-STUCK PATCH) Loaded Successfully!")
+print("iLoVe DeAtH v12.4 (AIM ROTATION PATCH) Loaded Successfully!")
