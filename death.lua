@@ -1,4 +1,4 @@
--- === iLoVe DeAtH // ULTIMATE DESTROYER v12.7 (STARTUP LOGGER) ===
+-- === iLoVe DeAtH // ULTIMATE DESTROYER v12.9 (THE ULTIMATE SYNTHESIS) ===
 
 local Services = setmetatable({}, {__index = function(_, k) return game:GetService(k) end})
 local Players = Services.Players
@@ -58,7 +58,7 @@ local function UniversalClick()
 end
 
 -- ==========================================
--- 1. HYBRID BYPASS & ANTI-KICK
+-- 1. HYBRID BYPASS & ANTI-KICK WITH LOGGER
 -- ==========================================
 local function SafeDestroy(obj) 
     pcall(function() obj:Destroy() end) 
@@ -73,10 +73,8 @@ local function DeepCleanup()
     end
 end
 
--- Báo cáo khởi động vòng lặp dọn dẹp
 print('--> bypassed with "DeepCleanup (Anti-Cheat Loop Active)"')
 
--- Báo cáo Hook Namecall
 if type(hookmetamethod) == "function" then
     local success = pcall(function()
         local OldNamecall
@@ -99,7 +97,6 @@ else
     print('--> bypass fallback: executor lacks hookmetamethod capability')
 end
 
--- Báo cáo Hook Function
 if type(hookfunction) == "function" then
     local success = pcall(function() 
         hookfunction(LocalPlayer.Kick, function() end) 
@@ -127,13 +124,13 @@ DeepCleanup()
 -- ==========================================
 -- 2. GLOBAL VARIABLES & GUI CONFIG
 -- ==========================================
-_G.SpamText = "iLoVe DeAtH v12.7 is DOMINATING THIS SERVER!"
+_G.SpamText = "iLoVe DeAtH v12.9 is DOMINATING THIS SERVER!"
 _G.SavedSkyPos = nil
 _G.SkyBasePart = nil
 _G.SkyCampHeight = 40
 
 local Features = {
-    AimLock = false, TriggerBot = false, GunMod = false, Magnet = false, Hitbox = false,
+    KillAura = false, AimLock = false, TriggerBot = false, GunMod = false, Magnet = false, Hitbox = false,
     SpeedHack = false, Noclip = false, InfJump = false, Spinbot = false, Fly = false,
     TpToClosest = false, ClickTP = false, BringEnemies = false, AnchorSpawn = false, SkyCamp = false,
     ESP = false, Tracers = false, Fullbright = false, NoFog = false, Chams = false,
@@ -197,7 +194,7 @@ Instance.new("UICorner", Sidebar).CornerRadius = UDim.new(0, 8)
 
 local TitleText = Instance.new("TextLabel", Sidebar)
 TitleText.Size = UDim2.new(1, 0, 0, 45)
-TitleText.Text = "DEATH v12.7"
+TitleText.Text = "DEATH v12.9"
 TitleText.TextColor3 = Color3.fromRGB(255, 0, 0)
 TitleText.TextSize = 18
 TitleText.Font = Enum.Font.GothamBlack
@@ -231,7 +228,7 @@ local function ClearContent()
 end
 
 local function SendNotification(msg)
-    pcall(function() Services.StarterGui:SetCore("SendNotification", { Title = "DEATH v12.7"; Text = msg; Duration = 2; }) end)
+    pcall(function() Services.StarterGui:SetCore("SendNotification", { Title = "DEATH v12.9"; Text = msg; Duration = 2; }) end)
 end
 
 -- ==========================================
@@ -365,11 +362,13 @@ RenderTab = function(tabName)
     ClearContent()
     if tabName == "Combat" then
         CreateActionBtn("🔥 BRUTAL MODE (ENABLE ALL) 🔥", function()
+            -- LƯU Ý: Đã gỡ KillAura ra khỏi danh sách kích hoạt tự động
             local rageList = {"ESP", "Tracers", "Chams", "Magnet", "SpeedHack", "InfJump", "GunMod", "Spinbot", "TpToClosest", "Fullbright", "NoFog"}
             for _, v in ipairs(rageList) do Features[v] = true end
             SendNotification("BRUTAL MODE ACTIVATED!")
             RenderTab("Combat")
         end, true)
+        CreateToggle("KILL AURA (Backpack Touch)", "KillAura")
         CreateToggle("AIMLOCK (180° INSTANT AIM)", "AimLock")
         CreateToggle("SAFE MAGNET (Silent Aim)", "Magnet")
         CreateToggle("HEAD HITBOX (15x Size)", "Hitbox")
@@ -841,7 +840,7 @@ RunService.RenderStepped:Connect(function()
 end)
 
 -- ==========================================
--- 8. PHYSICS & ANTI-STUCK TRIGGERBOT
+-- 8. PHYSICS, TRIGGERBOT & OVERDRIVE KILL AURA
 -- ==========================================
 local lastSpam = 0
 local lastTriggerClick = 0
@@ -852,6 +851,40 @@ RunService.Heartbeat:Connect(function()
     local Root = Char and Char:FindFirstChild("HumanoidRootPart")
     local Hum = Char and Char:FindFirstChildOfClass("Humanoid")
     local isShooting = InputService:IsMouseButtonPressed(0) or InputService:IsMouseButtonPressed(1)
+
+    -- CHỨC NĂNG MỚI: KILL AURA TỪ BACKPACK (CỦA BẠN) - ÉP XUNG ĐA LƯỢNG
+    if Features.KillAura and Root then
+        for _, targetPlayer in ipairs(Players:GetPlayers()) do
+            if targetPlayer ~= LocalPlayer and targetPlayer.Character and IsEnemy(targetPlayer.Character) then
+                local character = targetPlayer.Character
+                local humanoid = character:FindFirstChildOfClass("Humanoid")
+                local hrp = character:FindFirstChild("HumanoidRootPart")
+                
+                if humanoid and humanoid.Health > 0 and hrp then
+                    if (Root.Position - hrp.Position).Magnitude < 1000 then
+                        if type(firetouchinterest) == "function" then
+                            -- Ép tốc độ chém chạm mức tàn bạo (Gấp 3 lần mỗi nhịp Heartbeat)
+                            for i = 1, 3 do
+                                -- Quét Balo
+                                for _, item in ipairs(LocalPlayer.Backpack:GetChildren()) do
+                                    if item:IsA("Tool") and item:FindFirstChild("Handle") then
+                                        firetouchinterest(hrp, item.Handle, 0)
+                                        firetouchinterest(hrp, item.Handle, 1)
+                                    end
+                                end
+                                -- Quét vũ khí đang cầm
+                                local heldTool = Char:FindFirstChildOfClass("Tool")
+                                if heldTool and heldTool:FindFirstChild("Handle") then
+                                    firetouchinterest(hrp, heldTool.Handle, 0)
+                                    firetouchinterest(hrp, heldTool.Handle, 1)
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
 
     for _, player in ipairs(Players:GetPlayers()) do
         if player ~= LocalPlayer and player.Character then
@@ -982,4 +1015,4 @@ RunService.Heartbeat:Connect(function()
     end
 end)
 
-print("iLoVe DeAtH v12.7 (STARTUP LOGGER) Loaded Successfully!")
+print("iLoVe DeAtH v12.9 (THE ULTIMATE SYNTHESIS) Loaded Successfully!")
