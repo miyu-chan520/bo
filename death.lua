@@ -1,4 +1,4 @@
--- === iLoVe DeAtH // ULTIMATE DESTROYER v12.5 (PERFECT BASE) ===
+-- === iLoVe DeAtH // ULTIMATE DESTROYER v12.7 (STARTUP LOGGER) ===
 
 local Services = setmetatable({}, {__index = function(_, k) return game:GetService(k) end})
 local Players = Services.Players
@@ -12,7 +12,17 @@ local ReplicatedStorage = Services.ReplicatedStorage
 local LocalPlayer = Players.LocalPlayer
 local Camera = Workspace.CurrentCamera
 
-local MenuOpen = true -- [ĐÃ CHUYỂN LÊN ĐÂY ĐỂ TRIGGERBOT NHẬN DIỆN MỞ MENU]
+local MenuOpen = true
+
+print("----------------------------------------")
+print("[iLoVe DeAtH] INITIATING BYPASS SEQUENCE...")
+
+-- Kiểm tra bộ giấu GUI
+if type(gethui) == "function" then
+    print('--> bypassed with "gethui (CoreGui Protection)"')
+else
+    print('--> fallback: bypassed with "PlayerGui/CoreGui Protection"')
+end
 
 local ProtectGui = gethui or function() 
     return game:GetService("CoreGui") or LocalPlayer:WaitForChild("PlayerGui") 
@@ -24,7 +34,6 @@ end
 local function UniversalClick()
     task.spawn(function()
         pcall(function()
-            -- [FIX]: Bọc điều kiện không click chuột ảo khi mở menu
             if not MenuOpen then
                 local vim = game:GetService("VirtualInputManager")
                 if vim then
@@ -38,7 +47,6 @@ local function UniversalClick()
                 end
             end
             
-            -- Vẫn bắn bằng Tool nội bộ game bình thường dù mở menu
             local t = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Tool")
             if t then 
                 t:Activate() 
@@ -52,7 +60,9 @@ end
 -- ==========================================
 -- 1. HYBRID BYPASS & ANTI-KICK
 -- ==========================================
-local function SafeDestroy(obj) pcall(function() obj:Destroy() end) end
+local function SafeDestroy(obj) 
+    pcall(function() obj:Destroy() end) 
+end
 
 local function DeepCleanup()
     for _, v in ipairs(Workspace:GetDescendants()) do
@@ -63,22 +73,47 @@ local function DeepCleanup()
     end
 end
 
+-- Báo cáo khởi động vòng lặp dọn dẹp
+print('--> bypassed with "DeepCleanup (Anti-Cheat Loop Active)"')
+
+-- Báo cáo Hook Namecall
 if type(hookmetamethod) == "function" then
-    local OldNamecall
-    OldNamecall = hookmetamethod(game, "__namecall", function(Self, ...)
-        local Method = getnamecallmethod()
-        if Method == "Kick" or Method == "kick" then return end
-        if Method == "FireServer" then
-            local rn = tostring(Self.Name):lower()
-            if rn:find("kick") or rn:find("alert") or rn:find("ban") or rn:find("log") then return end
-        end
-        return OldNamecall(Self, ...)
+    local success = pcall(function()
+        local OldNamecall
+        OldNamecall = hookmetamethod(game, "__namecall", function(Self, ...)
+            local Method = getnamecallmethod()
+            if Method == "Kick" or Method == "kick" then return end
+            if Method == "FireServer" then
+                local rn = tostring(Self.Name):lower()
+                if rn:find("kick") or rn:find("alert") or rn:find("ban") or rn:find("log") then return end
+            end
+            return OldNamecall(Self, ...)
+        end)
     end)
+    if success then
+        print('--> bypassed with "hookmetamethod (__namecall Anti-Kick / Anti-Log)"')
+    else
+        print('--> bypass fallback: hookmetamethod execution failed')
+    end
+else
+    print('--> bypass fallback: executor lacks hookmetamethod capability')
 end
 
+-- Báo cáo Hook Function
 if type(hookfunction) == "function" then
-    pcall(function() hookfunction(LocalPlayer.Kick, function() end) end)
+    local success = pcall(function() 
+        hookfunction(LocalPlayer.Kick, function() end) 
+    end)
+    if success then
+        print('--> bypassed with "hookfunction (LocalPlayer.Kick Hook)"')
+    else
+        print('--> bypass fallback: hookfunction execution failed')
+    end
+else
+    print('--> bypass fallback: executor lacks hookfunction capability')
 end
+
+print("----------------------------------------")
 
 task.spawn(function()
     while task.wait(1.5) do
@@ -92,7 +127,7 @@ DeepCleanup()
 -- ==========================================
 -- 2. GLOBAL VARIABLES & GUI CONFIG
 -- ==========================================
-_G.SpamText = "iLoVe DeAtH v12.5 is DOMINATING THIS SERVER!"
+_G.SpamText = "iLoVe DeAtH v12.7 is DOMINATING THIS SERVER!"
 _G.SavedSkyPos = nil
 _G.SkyBasePart = nil
 _G.SkyCampHeight = 40
@@ -162,7 +197,7 @@ Instance.new("UICorner", Sidebar).CornerRadius = UDim.new(0, 8)
 
 local TitleText = Instance.new("TextLabel", Sidebar)
 TitleText.Size = UDim2.new(1, 0, 0, 45)
-TitleText.Text = "DEATH v12.5"
+TitleText.Text = "DEATH v12.7"
 TitleText.TextColor3 = Color3.fromRGB(255, 0, 0)
 TitleText.TextSize = 18
 TitleText.Font = Enum.Font.GothamBlack
@@ -196,7 +231,7 @@ local function ClearContent()
 end
 
 local function SendNotification(msg)
-    pcall(function() Services.StarterGui:SetCore("SendNotification", { Title = "DEATH v12.5"; Text = msg; Duration = 2; }) end)
+    pcall(function() Services.StarterGui:SetCore("SendNotification", { Title = "DEATH v12.7"; Text = msg; Duration = 2; }) end)
 end
 
 -- ==========================================
@@ -607,7 +642,6 @@ InputService.InputBegan:Connect(function(input, processed)
                 
                 if not _G.SkyBasePart or not _G.SkyBasePart.Parent then
                     _G.SkyBasePart = Instance.new("Part")
-                    -- [FIX]: Gắn tên rõ ràng để Noclip nhận diện
                     _G.SkyBasePart.Name = "DeathSkyBase" 
                     _G.SkyBasePart.Size = Vector3.new(20000, 1, 20000)
                     _G.SkyBasePart.Anchored = true
@@ -700,7 +734,6 @@ RunService.Stepped:Connect(function()
     end
     if Features.Noclip and LocalPlayer.Character then
         for _, part in pairs(LocalPlayer.Character:GetChildren()) do
-            -- [FIX]: Dặn Noclip bỏ qua khối SkyCamp không làm mất va chạm
             if part:IsA("BasePart") and part.Name ~= "DeathSkyBase" then 
                 part.CanCollide = false 
             end
@@ -873,7 +906,6 @@ RunService.Heartbeat:Connect(function()
             wasTriggering = false
             task.spawn(function()
                 pcall(function()
-                    -- [FIX]: Gắn thêm chốt chặn ngưng bắn nếu Menu đang mở
                     if not MenuOpen then
                         local vim = game:GetService("VirtualInputManager")
                         if vim then vim:SendMouseButtonEvent(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2, 0, false, game, 1) end
@@ -950,4 +982,4 @@ RunService.Heartbeat:Connect(function()
     end
 end)
 
-print("iLoVe DeAtH v12.5 (PERFECT BASE) Loaded Successfully!")
+print("iLoVe DeAtH v12.7 (STARTUP LOGGER) Loaded Successfully!")
