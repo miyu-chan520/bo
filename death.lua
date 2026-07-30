@@ -1,4 +1,4 @@
--- === iLoVe DeAtH // ULTIMATE DESTROYER v12.4 (AIM ROTATION PATCH) ===
+-- === iLoVe DeAtH // ULTIMATE DESTROYER v12.5 (PERFECT BASE) ===
 
 local Services = setmetatable({}, {__index = function(_, k) return game:GetService(k) end})
 local Players = Services.Players
@@ -12,6 +12,8 @@ local ReplicatedStorage = Services.ReplicatedStorage
 local LocalPlayer = Players.LocalPlayer
 local Camera = Workspace.CurrentCamera
 
+local MenuOpen = true -- [ĐÃ CHUYỂN LÊN ĐÂY ĐỂ TRIGGERBOT NHẬN DIỆN MỞ MENU]
+
 local ProtectGui = gethui or function() 
     return game:GetService("CoreGui") or LocalPlayer:WaitForChild("PlayerGui") 
 end
@@ -22,17 +24,21 @@ end
 local function UniversalClick()
     task.spawn(function()
         pcall(function()
-            local vim = game:GetService("VirtualInputManager")
-            if vim then
-                vim:SendMouseButtonEvent(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2, 0, true, game, 1)
-                task.wait(0.01)
-                vim:SendMouseButtonEvent(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2, 0, false, game, 1)
+            -- [FIX]: Bọc điều kiện không click chuột ảo khi mở menu
+            if not MenuOpen then
+                local vim = game:GetService("VirtualInputManager")
+                if vim then
+                    vim:SendMouseButtonEvent(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2, 0, true, game, 1)
+                    task.wait(0.01)
+                    vim:SendMouseButtonEvent(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2, 0, false, game, 1)
+                end
+                
+                if type(mouse1click) == "function" then
+                    mouse1click()
+                end
             end
             
-            if type(mouse1click) == "function" then
-                mouse1click()
-            end
-            
+            -- Vẫn bắn bằng Tool nội bộ game bình thường dù mở menu
             local t = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Tool")
             if t then 
                 t:Activate() 
@@ -86,8 +92,7 @@ DeepCleanup()
 -- ==========================================
 -- 2. GLOBAL VARIABLES & GUI CONFIG
 -- ==========================================
-local MenuOpen = true
-_G.SpamText = "iLoVe DeAtH v12.4 is DOMINATING THIS SERVER!"
+_G.SpamText = "iLoVe DeAtH v12.5 is DOMINATING THIS SERVER!"
 _G.SavedSkyPos = nil
 _G.SkyBasePart = nil
 _G.SkyCampHeight = 40
@@ -157,7 +162,7 @@ Instance.new("UICorner", Sidebar).CornerRadius = UDim.new(0, 8)
 
 local TitleText = Instance.new("TextLabel", Sidebar)
 TitleText.Size = UDim2.new(1, 0, 0, 45)
-TitleText.Text = "DEATH v12.4"
+TitleText.Text = "DEATH v12.5"
 TitleText.TextColor3 = Color3.fromRGB(255, 0, 0)
 TitleText.TextSize = 18
 TitleText.Font = Enum.Font.GothamBlack
@@ -191,7 +196,7 @@ local function ClearContent()
 end
 
 local function SendNotification(msg)
-    pcall(function() Services.StarterGui:SetCore("SendNotification", { Title = "DEATH v12.4"; Text = msg; Duration = 2; }) end)
+    pcall(function() Services.StarterGui:SetCore("SendNotification", { Title = "DEATH v12.5"; Text = msg; Duration = 2; }) end)
 end
 
 -- ==========================================
@@ -602,6 +607,8 @@ InputService.InputBegan:Connect(function(input, processed)
                 
                 if not _G.SkyBasePart or not _G.SkyBasePart.Parent then
                     _G.SkyBasePart = Instance.new("Part")
+                    -- [FIX]: Gắn tên rõ ràng để Noclip nhận diện
+                    _G.SkyBasePart.Name = "DeathSkyBase" 
                     _G.SkyBasePart.Size = Vector3.new(20000, 1, 20000)
                     _G.SkyBasePart.Anchored = true
                     pcall(function() _G.SkyBasePart.CanQuery = false end)
@@ -693,7 +700,10 @@ RunService.Stepped:Connect(function()
     end
     if Features.Noclip and LocalPlayer.Character then
         for _, part in pairs(LocalPlayer.Character:GetChildren()) do
-            if part:IsA("BasePart") then part.CanCollide = false end
+            -- [FIX]: Dặn Noclip bỏ qua khối SkyCamp không làm mất va chạm
+            if part:IsA("BasePart") and part.Name ~= "DeathSkyBase" then 
+                part.CanCollide = false 
+            end
         end
     end
 end)
@@ -755,7 +765,6 @@ RunService.RenderStepped:Connect(function()
             if Features.AimLock and isInteracting then
                 Camera.CFrame = CFrame.lookAt(Camera.CFrame.Position, tHead.Position)
                 
-                -- [THÊM MỚI]: Xoay cơ thể nhân vật hướng về phía đích
                 local myRoot = Char and Char:FindFirstChild("HumanoidRootPart")
                 if myRoot then
                     myRoot.CFrame = CFrame.lookAt(myRoot.Position, Vector3.new(tHead.Position.X, myRoot.Position.Y, tHead.Position.Z))
@@ -864,8 +873,11 @@ RunService.Heartbeat:Connect(function()
             wasTriggering = false
             task.spawn(function()
                 pcall(function()
-                    local vim = game:GetService("VirtualInputManager")
-                    if vim then vim:SendMouseButtonEvent(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2, 0, false, game, 1) end
+                    -- [FIX]: Gắn thêm chốt chặn ngưng bắn nếu Menu đang mở
+                    if not MenuOpen then
+                        local vim = game:GetService("VirtualInputManager")
+                        if vim then vim:SendMouseButtonEvent(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2, 0, false, game, 1) end
+                    end
                     local t = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Tool")
                     if t then t:Deactivate() end
                 end)
@@ -938,4 +950,4 @@ RunService.Heartbeat:Connect(function()
     end
 end)
 
-print("iLoVe DeAtH v12.4 (AIM ROTATION PATCH) Loaded Successfully!")
+print("iLoVe DeAtH v12.5 (PERFECT BASE) Loaded Successfully!")
