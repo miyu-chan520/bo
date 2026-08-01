@@ -58,7 +58,7 @@ local function UniversalClick()
 end
 
 -- ==========================================
--- 1. HYBRID BYPASS & ANTI-KICK WITH LOGGER
+-- 1. UNIVERSAL HYBRID BYPASS & ANTI-KICK (CRASH FIX)
 -- ==========================================
 local function SafeDestroy(obj) 
     pcall(function() obj:Destroy() end) 
@@ -80,16 +80,27 @@ if type(hookmetamethod) == "function" then
         local OldNamecall
         OldNamecall = hookmetamethod(game, "__namecall", function(Self, ...)
             local Method = getnamecallmethod()
-            if Method == "Kick" or Method == "kick" then return end
-            if Method == "FireServer" then
-                local rn = tostring(Self.Name):lower()
-                if rn:find("kick") or rn:find("alert") or rn:find("ban") or rn:find("log") then return end
+            
+            -- Chặn Kick ngay từ gốc
+            if Method == "Kick" or Method == "kick" then 
+                return 
             end
+            
+            -- BỘ LỌC AN TOÀN (ANTI-CRASH): Chỉ đọc tên nếu Self là một Instance hợp lệ
+            if (Method == "FireServer" or Method == "InvokeServer") and typeof(Self) == "Instance" then
+                local rn = string.lower(Self.Name)
+                -- Chặn các Remote gửi tín hiệu báo cáo lên máy chủ
+                if string.find(rn, "kick") or string.find(rn, "alert") or string.find(rn, "ban") or string.find(rn, "log") or string.find(rn, "crash") then 
+                    return 
+                end
+            end
+            
             return OldNamecall(Self, ...)
         end)
     end)
+    
     if success then
-        print('--> bypassed with "hookmetamethod (__namecall Anti-Kick / Anti-Log)"')
+        print('--> bypassed with "hookmetamethod (Universal Anti-Kick/Log)"')
     else
         print('--> bypass fallback: hookmetamethod execution failed')
     end
@@ -99,10 +110,12 @@ end
 
 if type(hookfunction) == "function" then
     local success = pcall(function() 
-        hookfunction(LocalPlayer.Kick, function() end) 
+        -- Hook chuẩn vào class Player để chống lỗi tràn vùng nhớ của Executor
+        hookfunction(Instance.new("Player").Kick, function() return end) 
     end)
+    
     if success then
-        print('--> bypassed with "hookfunction (LocalPlayer.Kick Hook)"')
+        print('--> bypassed with "hookfunction (Safe Player.Kick Hook)"')
     else
         print('--> bypass fallback: hookfunction execution failed')
     end
@@ -120,7 +133,6 @@ task.spawn(function()
     end
 end)
 DeepCleanup()
-
 -- ==========================================
 -- 2. GLOBAL VARIABLES & GUI CONFIG
 -- ==========================================
