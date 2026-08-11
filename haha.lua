@@ -44,7 +44,7 @@ if HAS_DRAWING then
     _G.DeAtH_FOVCircle = FOVCircle
     FOVCircle.Thickness = 1.5
     FOVCircle.Filled = false
-    FOVCircle.Color = Color3.fromRGB(0, 255, 200) -- Đổi màu FOV sang Xanh ngọc cho hợp Theme
+    FOVCircle.Color = Color3.fromRGB(0, 255, 200) -- Theme Xanh Ngọc
     FOVCircle.NumSides = 64
     FOVCircle.Visible = false
 end
@@ -96,7 +96,7 @@ _G.FOVSize = 100
 _G.OrigC0 = nil
 _G.BindingTarget = nil
 _G.AimPart = "Head"
-_G.MagnetPart = "HumanoidRootPart"
+_G.MagnetPart = "Head"
 
 local Features = {
     KillAura = false, AimLock = false, WallCheck = true, GunMod = false, FastReload = false, Magnet = false, Hitbox = false,
@@ -124,19 +124,18 @@ ScreenGui.Name = "HahaHub_v1"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = ProtectGui
 
--- [THIẾT KẾ GIAO DIỆN MỚI]
 local MainFrame = Instance.new("Frame", ScreenGui)
 MainFrame.Name = "MainFrame"
 MainFrame.Size = UDim2.new(0, 520, 0, 480)
 MainFrame.Position = UDim2.new(0.5, -260, 0.5, -240)
-MainFrame.BackgroundColor3 = Color3.fromRGB(20, 22, 28) -- Đen xanh hiện đại
+MainFrame.BackgroundColor3 = Color3.fromRGB(20, 22, 28)
 MainFrame.BorderSizePixel = 0
 MainFrame.Active = true
 MainFrame.Draggable = true
 Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 10)
 local MainStroke = Instance.new("UIStroke", MainFrame)
 MainStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-MainStroke.Color = Color3.fromRGB(0, 255, 200) -- Viền Cyan
+MainStroke.Color = Color3.fromRGB(0, 255, 200)
 MainStroke.Thickness = 2.5
 
 local Sidebar = Instance.new("Frame", MainFrame)
@@ -206,6 +205,24 @@ local function WorldToScreenDrawing(pos3D)
     local pos, onScreen = Camera:WorldToViewportPoint(pos3D)
     local inset = GuiService:GetGuiInset()
     return Vector2.new(pos.X, pos.Y + inset.Y), onScreen, pos.Z
+end
+
+local function UniversalClick()
+    task.spawn(function()
+        pcall(function()
+            if not MenuOpen then
+                local vim = game:GetService("VirtualInputManager")
+                if vim then
+                    vim:SendMouseButtonEvent(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2, 0, true, game, 1)
+                    task.wait(0.01)
+                    vim:SendMouseButtonEvent(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2, 0, false, game, 1)
+                end
+                if type(mouse1click) == "function" then mouse1click() end
+            end
+            local t = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Tool")
+            if t then t:Activate() task.wait(0.01) t:Deactivate() end
+        end)
+    end)
 end
 
 local function IsEnemy(c)
@@ -509,7 +526,7 @@ RenderTab = function(tabName)
     ClearContent()
     if tabName == "Combat" then
         CreateActionBtnWithBind("🔥 BRUTAL MODE 🔥", "RageMode", function()
-            local rageList = {"ESP", "ESPBox", "ESPName", "ESPHealth", "ESPDistance", "ESPTracer", "Chams", "Magnet", "AimLock"}
+            local rageList = {"ESP", "ESPBox", "ESPName", "ESPHealth", "ESPDistance", "ESPTracer", "Chams", "Magnet", "AimLock", "ShowFOV"}
             for _, v in ipairs(rageList) do 
                 if Features[v] ~= nil then Features[v] = true end
                 if VisualCallbacks[v] then VisualCallbacks[v]() end
@@ -520,7 +537,6 @@ RenderTab = function(tabName)
         end, true)
         
         CreateToggleWithBind("WALL CHECK (Visible Only)", "WallCheck")
-        
         CreateToggleWithBind("AIMLOCK", "AimLock")
         CreateCycleButton("AIMLOCK TARGET", {"HEAD", "BODY"}, 1, function(val)
             _G.AimPart = (val == "HEAD") and "Head" or "HumanoidRootPart"
@@ -531,10 +547,10 @@ RenderTab = function(tabName)
             _G.MagnetPart = (val == "HEAD") and "Head" or "HumanoidRootPart"
         end)
         
-        CreateToggleWithBind("KILL AURA (100% Reliable)", "KillAura")
-        CreateToggleWithBind("HEAD HITBOX (No Collision)", "Hitbox")
-        CreateToggleWithBind("GUN MOD (No Recoil/Spread)", "GunMod")
-        CreateToggleWithBind("FAST RELOAD (Safe Bypass)", "FastReload")
+        CreateToggleWithBind("KILL AURA", "KillAura")
+        CreateToggleWithBind("HEAD HITBOX", "Hitbox")
+        CreateToggleWithBind("GUN MOD", "GunMod")
+        CreateToggleWithBind("FAST RELOAD", "FastReload")
     elseif tabName == "Movement" then
         CreateToggleWithBind("SPEEDHACK (WalkSpeed)", "SpeedHackWS", function(state)
             if not state and LocalPlayer.Character then
@@ -544,12 +560,10 @@ RenderTab = function(tabName)
         end)
         CreateToggleWithBind("SPEEDHACK (CFrame/Bypass)", "SpeedHackCF")
         CreateSlider("SPEED VALUE", 16, 300, 5, _G.WalkSpeedValue, function(val) _G.WalkSpeedValue = val end)
-        
         CreateToggleWithBind("OMNI MATRIX SPINBOT", "Spinbot")
-        
         CreateToggleWithBind("INFINITE JUMP", "InfJump")
-        CreateToggleWithBind("NOCLIP (Walk through walls)", "Noclip")
-        CreateToggleWithBind("UNIVERSAL FLY (Omni-Dir)", "Fly")
+        CreateToggleWithBind("NOCLIP", "Noclip")
+        CreateToggleWithBind("UNIVERSAL FLY", "Fly")
     elseif tabName == "Teleport" then
         CreateToggleWithBind("☁️ SKY CAMP / OVERWATCH ☁️", "SkyCamp")
         CreateSlider("SKY CAMP HEIGHT", 10, 500, 10, _G.SkyCampHeight, function(val)
@@ -583,14 +597,13 @@ RenderTab = function(tabName)
         end, false)
         
         CreateToggleWithBind("CLICK TP (Ctrl + Click)", "ClickTP")
-        CreateToggleWithBind("BRING ENEMIES (Pull to you)", "BringEnemies")
+        CreateToggleWithBind("BRING ENEMIES", "BringEnemies")
     elseif tabName == "Visuals" then
         CreateToggleWithBind("SHOW AIM FOV", "ShowFOV")
         CreateSlider("FOV SIZE", 10, 500, 10, _G.FOVSize, function(val) _G.FOVSize = val end)
-        
         CreateToggleWithBind("HIDE BODY", "HidePlayer")
         CreateToggleWithBind("ESP MASTER SWITCH", "ESP")
-        CreateToggleWithBind("ESP BOX (Head to Toe)", "ESPBox")
+        CreateToggleWithBind("ESP BOX", "ESPBox")
         CreateToggleWithBind("ESP NAME", "ESPName")
         CreateToggleWithBind("ESP DISTANCE", "ESPDistance")
         CreateToggleWithBind("ESP HEALTH BAR", "ESPHealth")
@@ -599,13 +612,13 @@ RenderTab = function(tabName)
         CreateToggleWithBind("FULLBRIGHT", "Fullbright")
         CreateToggleWithBind("NO FOG", "NoFog")
     elseif tabName == "Exploits" then
-        CreateToggleWithBind("GOD MODE (Infinite Health)", "GodMode")
+        CreateToggleWithBind("GOD MODE", "GodMode")
         CreateToggleWithBind("VOID IMMUNE", "VoidImmune", function(state)
             if not state and Workspace:FindFirstChild("DeathAntiVoidNet") then Workspace.DeathAntiVoidNet:Destroy() end
         end)
-        CreateToggleWithBind("INSTANT GET (0s Hold Prompt)", "InstantGet")
-        CreateToggleWithBind("GHOST MODE (Invisible)", "Invisible")
-        CreateActionBtnWithBind("FPS BOOSTER (Max Perf)", "FpsBooster", function()
+        CreateToggleWithBind("INSTANT GET", "InstantGet")
+        CreateToggleWithBind("GHOST MODE", "Invisible")
+        CreateActionBtnWithBind("FPS BOOSTER", "FpsBooster", function()
             settings().Rendering.QualityLevel = 1
             game.Lighting.GlobalShadows = false
             for _, v in pairs(Workspace:GetDescendants()) do
@@ -784,7 +797,7 @@ RunService.Heartbeat:Connect(function()
 end)
 
 -- ==========================================
--- 8. DRAWING API ESP
+-- 8. DRAWING API ESP (ĐỘC LẬP & PCALL AN TOÀN)
 -- ==========================================
 local function InitESP(c)
     if not HAS_DRAWING then return end
@@ -920,7 +933,7 @@ RunService.RenderStepped:Connect(function()
 end)
 
 -- ==========================================
--- 10. HEARTBEAT: PHYSICS, AIM 3D ALIGN & MAGNET 
+-- 10. HEARTBEAT: PHYSICS, AIM 3D ALIGN & MAGNET ANTI-WALL
 -- ==========================================
 RunService.Heartbeat:Connect(function()
     local Char = LocalPlayer.Character
@@ -942,7 +955,7 @@ RunService.Heartbeat:Connect(function()
         Hum.AutoRotate = true
     end
 
-    -- [MAGNET BÙ ĐẠN MƯỢT - KHÔNG DÍNH NGƯỜI]
+    -- [MAGNET BÙ ĐẠN - ANTI-WALL CLIP]
     if Features.Magnet and isShooting and Target then
         local magTargetPart = Target:FindFirstChild(_G.MagnetPart or "HumanoidRootPart")
         local targetRoot = Target:FindFirstChild("HumanoidRootPart")
@@ -953,6 +966,18 @@ RunService.Heartbeat:Connect(function()
             
             local projectionDistance = (magTargetPart.Position - camPos):Dot(lookVec)
             if projectionDistance < 10 then projectionDistance = 10 end
+            
+            -- CHỐNG KẸT TƯỜNG (RAYCAST)
+            local rayParams = RaycastParams.new()
+            rayParams.FilterType = Enum.RaycastFilterType.Blacklist
+            rayParams.FilterDescendantsInstances = {LocalPlayer.Character, Target, Camera}
+            
+            local wallCheckRay = Workspace:Raycast(camPos, lookVec * projectionDistance, rayParams)
+            if wallCheckRay then
+                -- Nếu đụng tường, lôi địch ra đứng ngay trước mặt tường 2 studs
+                projectionDistance = (wallCheckRay.Position - camPos).Magnitude - 2
+                if projectionDistance < 5 then projectionDistance = 5 end
+            end
             
             local pointOnRay = camPos + (lookVec * projectionDistance)
             
