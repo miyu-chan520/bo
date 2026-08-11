@@ -1,4 +1,4 @@
--- === iLoVe DeAtH // ULTIMATE DESTROYER v57.0 (THE FINAL POLISH) ===
+-- === Haha Hub :) // ULTIMATE SCRIPT ===
 
 local Services = setmetatable({}, {__index = function(_, k) return game:GetService(k) end})
 local Players = Services.Players
@@ -15,7 +15,7 @@ local ProximityPromptService = game:GetService("ProximityPromptService")
 local MenuOpen = true
 
 print("----------------------------------------")
-print("[iLoVe DeAtH] INITIATING THE FINAL POLISH (v57.0)...")
+print("[Haha Hub :)] INITIATING SYSTEM...")
 
 -- ==========================================
 -- 0. DRAWING API MEMORY LEAK FIX
@@ -42,15 +42,15 @@ local FOVCircle
 if HAS_DRAWING then
     FOVCircle = Drawing.new("Circle")
     _G.DeAtH_FOVCircle = FOVCircle
-    FOVCircle.Thickness = 1
+    FOVCircle.Thickness = 1.5
     FOVCircle.Filled = false
-    FOVCircle.Color = Color3.fromRGB(255, 0, 0)
+    FOVCircle.Color = Color3.fromRGB(0, 255, 200) -- Đổi màu FOV sang Xanh ngọc cho hợp Theme
     FOVCircle.NumSides = 64
     FOVCircle.Visible = false
 end
 
 -- ==========================================
--- 1. EVENT-DRIVEN CLEANUP & O(1) BYPASS
+-- 1. EVENT-DRIVEN CLEANUP
 -- ==========================================
 local function SafeDestroy(obj) pcall(function() obj:Destroy() end) end
 
@@ -87,7 +87,7 @@ end
 -- ==========================================
 -- 2. GUI CONFIG & BUILDER
 -- ==========================================
-_G.SpamText = "iLoVe DeAtH v57.0 is DOMINATING THIS SERVER!"
+_G.SpamText = "Haha Hub :) is DOMINATING THIS SERVER!"
 _G.SavedSkyPos = nil
 _G.SkyBasePart = nil
 _G.SkyCampHeight = 40
@@ -99,7 +99,7 @@ _G.AimPart = "Head"
 _G.MagnetPart = "HumanoidRootPart"
 
 local Features = {
-    KillAura = false, AimLock = false, WallCheck = true, TriggerBot = false, GunMod = false, FastReload = false, Magnet = false, Hitbox = false,
+    KillAura = false, AimLock = false, WallCheck = true, GunMod = false, FastReload = false, Magnet = false, Hitbox = false,
     SpeedHackWS = false, SpeedHackCF = false, Noclip = false, InfJump = false, Spinbot = false, Fly = false,
     ClickTP = false, BringEnemies = false, SkyCamp = false, 
     ESP = false, ESPBox = true, ESPName = true, ESPDistance = true, ESPHealth = true, ESPTracer = false,
@@ -116,38 +116,39 @@ local HitboxSize = 15
 
 local ProtectGui = gethui and gethui() or game:GetService("CoreGui") or LocalPlayer:WaitForChild("PlayerGui")
 for _, gui in ipairs(ProtectGui:GetChildren()) do
-    if string.find(gui.Name, "iLoVeDeAtH") then gui:Destroy() end
+    if string.find(gui.Name, "HahaHub") then gui:Destroy() end
 end
 
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "iLoVeDeAtH_v57"
+ScreenGui.Name = "HahaHub_v1"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = ProtectGui
 
+-- [THIẾT KẾ GIAO DIỆN MỚI]
 local MainFrame = Instance.new("Frame", ScreenGui)
 MainFrame.Name = "MainFrame"
 MainFrame.Size = UDim2.new(0, 520, 0, 480)
 MainFrame.Position = UDim2.new(0.5, -260, 0.5, -240)
-MainFrame.BackgroundColor3 = Color3.fromRGB(15, 10, 15)
+MainFrame.BackgroundColor3 = Color3.fromRGB(20, 22, 28) -- Đen xanh hiện đại
 MainFrame.BorderSizePixel = 0
 MainFrame.Active = true
 MainFrame.Draggable = true
-Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 8)
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 10)
 local MainStroke = Instance.new("UIStroke", MainFrame)
 MainStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-MainStroke.Color = Color3.fromRGB(220, 0, 0)
-MainStroke.Thickness = 2
+MainStroke.Color = Color3.fromRGB(0, 255, 200) -- Viền Cyan
+MainStroke.Thickness = 2.5
 
 local Sidebar = Instance.new("Frame", MainFrame)
 Sidebar.Size = UDim2.new(0, 140, 1, 0)
-Sidebar.BackgroundColor3 = Color3.fromRGB(10, 5, 10)
-Instance.new("UICorner", Sidebar).CornerRadius = UDim.new(0, 8)
+Sidebar.BackgroundColor3 = Color3.fromRGB(15, 16, 20)
+Instance.new("UICorner", Sidebar).CornerRadius = UDim.new(0, 10)
 
 local TitleText = Instance.new("TextLabel", Sidebar)
 TitleText.Size = UDim2.new(1, 0, 0, 45)
-TitleText.Text = "DEATH v57.0"
-TitleText.TextColor3 = Color3.fromRGB(255, 0, 0)
-TitleText.TextSize = 19
+TitleText.Text = "Haha Hub :)"
+TitleText.TextColor3 = Color3.fromRGB(0, 255, 200)
+TitleText.TextSize = 20
 TitleText.Font = Enum.Font.GothamBlack
 TitleText.BackgroundTransparency = 1
 
@@ -158,7 +159,7 @@ InsertHint.BackgroundTransparency = 1
 InsertHint.Text = "[INSERT] Hide Menu\nClick [-] to Bind Key"
 InsertHint.TextColor3 = Color3.fromRGB(150, 150, 150)
 InsertHint.Font = Enum.Font.Gotham
-InsertHint.TextSize = 9
+InsertHint.TextSize = 10
 
 local ContentFrame = Instance.new("ScrollingFrame", MainFrame)
 ContentFrame.Size = UDim2.new(1, -155, 1, -20)
@@ -166,7 +167,7 @@ ContentFrame.Position = UDim2.new(0, 148, 0, 10)
 ContentFrame.BackgroundTransparency = 1
 ContentFrame.BorderSizePixel = 0
 ContentFrame.ScrollBarThickness = 4
-ContentFrame.ScrollBarImageColor3 = Color3.fromRGB(220, 0, 0)
+ContentFrame.ScrollBarImageColor3 = Color3.fromRGB(0, 255, 200)
 
 local ListLayout = Instance.new("UIListLayout", ContentFrame)
 ListLayout.Padding = UDim.new(0, 8)
@@ -178,7 +179,7 @@ local function ClearContent()
 end
 
 local function SendNotification(msg)
-    pcall(function() Services.StarterGui:SetCore("SendNotification", { Title = "DEATH v57.0"; Text = msg; Duration = 2; }) end)
+    pcall(function() Services.StarterGui:SetCore("SendNotification", { Title = "Haha Hub :)"; Text = msg; Duration = 2; }) end)
 end
 
 -- ==========================================
@@ -205,24 +206,6 @@ local function WorldToScreenDrawing(pos3D)
     local pos, onScreen = Camera:WorldToViewportPoint(pos3D)
     local inset = GuiService:GetGuiInset()
     return Vector2.new(pos.X, pos.Y + inset.Y), onScreen, pos.Z
-end
-
-local function UniversalClick()
-    task.spawn(function()
-        pcall(function()
-            if not MenuOpen then
-                local vim = game:GetService("VirtualInputManager")
-                if vim then
-                    vim:SendMouseButtonEvent(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2, 0, true, game, 1)
-                    task.wait(0.01)
-                    vim:SendMouseButtonEvent(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2, 0, false, game, 1)
-                end
-                if type(mouse1click) == "function" then mouse1click() end
-            end
-            local t = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Tool")
-            if t then t:Activate() task.wait(0.01) t:Deactivate() end
-        end)
-    end)
 end
 
 local function IsEnemy(c)
@@ -320,7 +303,7 @@ local function ToggleSkyCamp(state)
                 pcall(function() _G.SkyBasePart.CanQuery = false end)
                 _G.SkyBasePart.Transparency = 0.7
                 _G.SkyBasePart.Material = Enum.Material.SmoothPlastic
-                _G.SkyBasePart.Color = Color3.fromRGB(0, 255, 255)
+                _G.SkyBasePart.Color = Color3.fromRGB(0, 255, 200)
             end
             _G.SkyBasePart.Parent = char
             _G.SkyBasePart.Position = skyPos
@@ -351,26 +334,26 @@ local function CreateToggleWithBind(text, key, callback)
     Btn.Size = UDim2.new(1, -65, 1, 0)
     Btn.Font = Enum.Font.GothamBold
     Btn.TextSize = 11
-    Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 4)
+    Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 6)
 
     local BindBtn = Instance.new("TextButton", Container)
     BindBtn.Size = UDim2.new(0, 60, 1, 0)
     BindBtn.Position = UDim2.new(1, -60, 0, 0)
     BindBtn.Font = Enum.Font.Gotham
     BindBtn.TextSize = 10
-    BindBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+    BindBtn.BackgroundColor3 = Color3.fromRGB(30, 32, 40)
     BindBtn.TextColor3 = Color3.fromRGB(150, 150, 150)
-    Instance.new("UICorner", BindBtn).CornerRadius = UDim.new(0, 4)
+    Instance.new("UICorner", BindBtn).CornerRadius = UDim.new(0, 6)
 
     local function UpdateVisuals()
         if Features[key] then
             Btn.Text = ">> " .. text .. " <<"
-            Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-            Btn.BackgroundColor3 = Color3.fromRGB(180, 0, 0)
+            Btn.TextColor3 = Color3.fromRGB(20, 20, 25)
+            Btn.BackgroundColor3 = Color3.fromRGB(0, 255, 200)
         else
             Btn.Text = "[ OFF ]  " .. text
-            Btn.TextColor3 = Color3.fromRGB(160, 160, 160)
-            Btn.BackgroundColor3 = Color3.fromRGB(25, 20, 25)
+            Btn.TextColor3 = Color3.fromRGB(180, 180, 180)
+            Btn.BackgroundColor3 = Color3.fromRGB(30, 32, 40)
         end
         local currentKey = Keybinds[key]
         BindBtn.Text = currentKey and "["..currentKey.Name.."]" or "[ - ]"
@@ -403,18 +386,18 @@ local function CreateActionBtnWithBind(text, actionName, callback, isRage)
     Btn.Font = Enum.Font.GothamBlack
     Btn.TextSize = 12
     Btn.Text = text
-    Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Btn.BackgroundColor3 = isRage and Color3.fromRGB(210, 0, 0) or Color3.fromRGB(50, 50, 50)
-    Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 4)
+    Btn.TextColor3 = isRage and Color3.fromRGB(20, 20, 25) or Color3.fromRGB(255, 255, 255)
+    Btn.BackgroundColor3 = isRage and Color3.fromRGB(0, 255, 200) or Color3.fromRGB(50, 50, 60)
+    Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 6)
 
     local BindBtn = Instance.new("TextButton", Container)
     BindBtn.Size = UDim2.new(0, 60, 1, 0)
     BindBtn.Position = UDim2.new(1, -60, 0, 0)
     BindBtn.Font = Enum.Font.Gotham
     BindBtn.TextSize = 10
-    BindBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+    BindBtn.BackgroundColor3 = Color3.fromRGB(30, 32, 40)
     BindBtn.TextColor3 = Color3.fromRGB(150, 150, 150)
-    Instance.new("UICorner", BindBtn).CornerRadius = UDim.new(0, 4)
+    Instance.new("UICorner", BindBtn).CornerRadius = UDim.new(0, 6)
 
     local function UpdateBindVisual()
         local currentKey = Keybinds[actionName]
@@ -440,9 +423,9 @@ local function CreateCycleButton(text, options, defaultIndex, callback)
     Btn.Size = UDim2.new(1, -10, 1, 0)
     Btn.Font = Enum.Font.GothamBold
     Btn.TextSize = 11
-    Btn.BackgroundColor3 = Color3.fromRGB(35, 30, 35)
-    Btn.TextColor3 = Color3.fromRGB(200, 200, 200)
-    Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 4)
+    Btn.BackgroundColor3 = Color3.fromRGB(40, 42, 50)
+    Btn.TextColor3 = Color3.fromRGB(0, 255, 200)
+    Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 6)
 
     local currentIndex = defaultIndex
     Btn.Text = "[ " .. options[currentIndex] .. " ]  " .. text
@@ -459,21 +442,21 @@ end
 local function CreateTextBox(placeholder)
     local Box = Instance.new("TextBox", ContentFrame)
     Box.Size = UDim2.new(1, -10, 0, 35)
-    Box.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    Box.BackgroundColor3 = Color3.fromRGB(30, 32, 40)
     Box.TextColor3 = Color3.fromRGB(255, 255, 255)
     Box.Font = Enum.Font.Gotham
     Box.TextSize = 12
     Box.PlaceholderText = placeholder
     Box.Text = _G.SpamText
-    Instance.new("UICorner", Box).CornerRadius = UDim.new(0, 4)
+    Instance.new("UICorner", Box).CornerRadius = UDim.new(0, 6)
     Box.FocusLost:Connect(function() _G.SpamText = Box.Text end)
 end
 
 local function CreateSlider(text, min, max, step, default, callback)
     local F = Instance.new("Frame", ContentFrame)
     F.Size = UDim2.new(1, -10, 0, 45)
-    F.BackgroundColor3 = Color3.fromRGB(25, 20, 25)
-    Instance.new("UICorner", F).CornerRadius = UDim.new(0, 4)
+    F.BackgroundColor3 = Color3.fromRGB(30, 32, 40)
+    Instance.new("UICorner", F).CornerRadius = UDim.new(0, 6)
 
     local L = Instance.new("TextLabel", F)
     L.Size = UDim2.new(1, -10, 0, 20)
@@ -488,13 +471,13 @@ local function CreateSlider(text, min, max, step, default, callback)
     local Track = Instance.new("TextButton", F)
     Track.Size = UDim2.new(1, -20, 0, 8)
     Track.Position = UDim2.new(0, 10, 0, 28)
-    Track.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
+    Track.BackgroundColor3 = Color3.fromRGB(50, 52, 60)
     Track.Text = ""
     Instance.new("UICorner", Track).CornerRadius = UDim.new(1, 0)
 
     local Fill = Instance.new("Frame", Track)
     Fill.Size = UDim2.new((default - min) / (max - min), 0, 1, 0)
-    Fill.BackgroundColor3 = Color3.fromRGB(180, 0, 0)
+    Fill.BackgroundColor3 = Color3.fromRGB(0, 255, 200)
     Instance.new("UICorner", Fill).CornerRadius = UDim.new(1, 0)
 
     local dragging = false
@@ -525,34 +508,33 @@ local RenderTab
 RenderTab = function(tabName)
     ClearContent()
     if tabName == "Combat" then
-        CreateActionBtnWithBind("🔥 BRUTAL MODE (ENABLE ALL) 🔥", "RageMode", function()
-            local rageList = {"ESP", "ESPBox", "ESPName", "ESPHealth", "ESPDistance", "Chams", "Magnet", "SpeedHackCF", "InfJump", "GunMod", "FastReload", "Spinbot", "Fullbright", "InstantGet"}
+        CreateActionBtnWithBind("🔥 BRUTAL MODE 🔥", "RageMode", function()
+            local rageList = {"ESP", "ESPBox", "ESPName", "ESPHealth", "ESPDistance", "ESPTracer", "Chams", "Magnet", "AimLock"}
             for _, v in ipairs(rageList) do 
                 if Features[v] ~= nil then Features[v] = true end
                 if VisualCallbacks[v] then VisualCallbacks[v]() end
             end
+            _G.AimPart = "Head"
+            _G.MagnetPart = "Head"
             SendNotification("BRUTAL MODE ACTIVATED!")
         end, true)
-        CreateToggleWithBind("SHOW AIM FOV", "ShowFOV")
-        CreateSlider("FOV SIZE", 10, 500, 10, _G.FOVSize, function(val) _G.FOVSize = val end)
         
         CreateToggleWithBind("WALL CHECK (Visible Only)", "WallCheck")
         
-        CreateToggleWithBind("AIMLOCK (3D Hard Snap 100%)", "AimLock")
+        CreateToggleWithBind("AIMLOCK", "AimLock")
         CreateCycleButton("AIMLOCK TARGET", {"HEAD", "BODY"}, 1, function(val)
             _G.AimPart = (val == "HEAD") and "Head" or "HumanoidRootPart"
         end)
         
-        CreateToggleWithBind("MAGNET (Direct Target Pull)", "Magnet")
+        CreateToggleWithBind("MAGNET", "Magnet")
         CreateCycleButton("MAGNET TARGET", {"HEAD", "BODY"}, 1, function(val)
             _G.MagnetPart = (val == "HEAD") and "Head" or "HumanoidRootPart"
         end)
         
         CreateToggleWithBind("KILL AURA (100% Reliable)", "KillAura")
         CreateToggleWithBind("HEAD HITBOX (No Collision)", "Hitbox")
-        CreateToggleWithBind("TRIGGERBOT", "TriggerBot")
         CreateToggleWithBind("GUN MOD (No Recoil/Spread)", "GunMod")
-        CreateToggleWithBind("FAST RELOAD (0s Reload/FireRate)", "FastReload")
+        CreateToggleWithBind("FAST RELOAD (Safe Bypass)", "FastReload")
     elseif tabName == "Movement" then
         CreateToggleWithBind("SPEEDHACK (WalkSpeed)", "SpeedHackWS", function(state)
             if not state and LocalPlayer.Character then
@@ -583,21 +565,16 @@ RenderTab = function(tabName)
             end
         end)
         
-        -- [BẢN VÁ LỖI DỊCH CHUYỂN NGƯỢC]: Hủy SavedSkyPos trước khi tắt SkyCamp
         CreateActionBtnWithBind("TP TO CLOSEST", "TpToClosest", function()
             local Target = GetClosest3D()
             local char = LocalPlayer.Character
             if Target and char and char:FindFirstChild("HumanoidRootPart") then
-                
-                -- Nếu SkyCamp đang bật, ta HỦY vị trí lưu trước khi tắt để không bị hút ngược về chỗ cũ
                 if Features.SkyCamp then
                     Features.SkyCamp = false
-                    _G.SavedSkyPos = nil -- Xóa vị trí lưu trên mặt đất
+                    _G.SavedSkyPos = nil
                     ToggleSkyCamp(false)
                     if VisualCallbacks["SkyCamp"] then VisualCallbacks["SkyCamp"]() end
                 end
-                
-                -- Dịch chuyển ra sau lưng kẻ địch 3 studs
                 char.HumanoidRootPart.CFrame = Target.HumanoidRootPart.CFrame * CFrame.new(0, 0, 3)
                 SendNotification("Teleported to Target!")
             else
@@ -608,20 +585,22 @@ RenderTab = function(tabName)
         CreateToggleWithBind("CLICK TP (Ctrl + Click)", "ClickTP")
         CreateToggleWithBind("BRING ENEMIES (Pull to you)", "BringEnemies")
     elseif tabName == "Visuals" then
-        CreateToggleWithBind("HIDE BODY (Requires Spinbot)", "HidePlayer")
+        CreateToggleWithBind("SHOW AIM FOV", "ShowFOV")
+        CreateSlider("FOV SIZE", 10, 500, 10, _G.FOVSize, function(val) _G.FOVSize = val end)
         
+        CreateToggleWithBind("HIDE BODY", "HidePlayer")
         CreateToggleWithBind("ESP MASTER SWITCH", "ESP")
         CreateToggleWithBind("ESP BOX (Head to Toe)", "ESPBox")
         CreateToggleWithBind("ESP NAME", "ESPName")
         CreateToggleWithBind("ESP DISTANCE", "ESPDistance")
         CreateToggleWithBind("ESP HEALTH BAR", "ESPHealth")
         CreateToggleWithBind("ESP TRACERS", "ESPTracer")
-        CreateToggleWithBind("CHAMS (Player Highlight)", "Chams")
+        CreateToggleWithBind("CHAMS", "Chams")
         CreateToggleWithBind("FULLBRIGHT", "Fullbright")
         CreateToggleWithBind("NO FOG", "NoFog")
     elseif tabName == "Exploits" then
         CreateToggleWithBind("GOD MODE (Infinite Health)", "GodMode")
-        CreateToggleWithBind("VOID IMMUNE (Net Barrier)", "VoidImmune", function(state)
+        CreateToggleWithBind("VOID IMMUNE", "VoidImmune", function(state)
             if not state and Workspace:FindFirstChild("DeathAntiVoidNet") then Workspace.DeathAntiVoidNet:Destroy() end
         end)
         CreateToggleWithBind("INSTANT GET (0s Hold Prompt)", "InstantGet")
@@ -652,7 +631,7 @@ local function CreateTabButton(name, layoutOrder)
     local TabBtn = Instance.new("TextButton", Sidebar)
     TabBtn.Size = UDim2.new(1, -10, 0, 35)
     TabBtn.Position = UDim2.new(0, 5, 0, 50 + (layoutOrder * 42))
-    TabBtn.BackgroundColor3 = Color3.fromRGB(25, 20, 25)
+    TabBtn.BackgroundColor3 = Color3.fromRGB(30, 32, 40)
     TabBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
     TabBtn.Text = name
     TabBtn.Font = Enum.Font.GothamBold
@@ -805,7 +784,7 @@ RunService.Heartbeat:Connect(function()
 end)
 
 -- ==========================================
--- 8. DRAWING API ESP (ĐỘC LẬP & PCALL AN TOÀN)
+-- 8. DRAWING API ESP
 -- ==========================================
 local function InitESP(c)
     if not HAS_DRAWING then return end
@@ -890,7 +869,7 @@ RunService.RenderStepped:Connect(function()
                             local tl = Vector2.new(topPos.X - width/2, topPos.Y)
                             local br = Vector2.new(topPos.X + width/2, botPos.Y)
 
-                            if Features.ESPBox then o.Box.Visible = true; o.Box.Size = Vector2.new(width, height); o.Box.Position = tl; o.Box.Color = Color3.fromRGB(255, 0, 0) else o.Box.Visible = false end
+                            if Features.ESPBox then o.Box.Visible = true; o.Box.Size = Vector2.new(width, height); o.Box.Position = tl; o.Box.Color = Color3.fromRGB(0, 255, 200) else o.Box.Visible = false end
                             if Features.ESPName then o.Name.Visible = true; o.Name.Text = o.DisplayName; o.Name.Position = Vector2.new(topPos.X, topPos.Y - 18); o.Name.Color = Color3.new(1, 1, 1) else o.Name.Visible = false end
                             if Features.ESPDistance then o.Distance.Visible = true; o.Distance.Text = math.floor(dist) .. "m"; o.Distance.Position = Vector2.new(topPos.X, botPos.Y + 4); o.Distance.Color = Color3.new(1, 1, 1) else o.Distance.Visible = false end
 
@@ -902,7 +881,7 @@ RunService.RenderStepped:Connect(function()
                                 o.HealthBg.Visible = false; o.HealthVal.Visible = false
                             end
 
-                            if Features.ESPTracer then o.Tracer.Visible = true; o.Tracer.From = topScreen; o.Tracer.To = Vector2.new(topPos.X, topPos.Y); o.Tracer.Color = Color3.fromRGB(255, 0, 0) else o.Tracer.Visible = false end
+                            if Features.ESPTracer then o.Tracer.Visible = true; o.Tracer.From = topScreen; o.Tracer.To = Vector2.new(topPos.X, topPos.Y); o.Tracer.Color = Color3.fromRGB(0, 255, 200) else o.Tracer.Visible = false end
                         else
                             o.Box.Visible = false; o.Name.Visible = false; o.Distance.Visible = false; o.HealthBg.Visible = false; o.HealthVal.Visible = false; o.Tracer.Visible = false
                         end
@@ -927,7 +906,7 @@ RunService.RenderStepped:Connect(function()
 end)
 
 -- ==========================================
--- 9. CAMERA AIMLOCK (HARD SNAP 100%)
+-- 9. CAMERA AIMLOCK 
 -- ==========================================
 RunService.RenderStepped:Connect(function()
     local Target = GetClosestScreen()
@@ -941,7 +920,7 @@ RunService.RenderStepped:Connect(function()
 end)
 
 -- ==========================================
--- 10. HEARTBEAT: PHYSICS, AIM 3D ALIGN & DIRECT MAGNET PULL
+-- 10. HEARTBEAT: PHYSICS, AIM 3D ALIGN & MAGNET 
 -- ==========================================
 RunService.Heartbeat:Connect(function()
     local Char = LocalPlayer.Character
@@ -963,7 +942,7 @@ RunService.Heartbeat:Connect(function()
         Hum.AutoRotate = true
     end
 
-    -- [MAGNET: KÉO THẲNG BỘ PHẬN VÀO TÂM TIA ĐẠN (DIRECT PULL)]
+    -- [MAGNET BÙ ĐẠN MƯỢT - KHÔNG DÍNH NGƯỜI]
     if Features.Magnet and isShooting and Target then
         local magTargetPart = Target:FindFirstChild(_G.MagnetPart or "HumanoidRootPart")
         local targetRoot = Target:FindFirstChild("HumanoidRootPart")
@@ -976,7 +955,14 @@ RunService.Heartbeat:Connect(function()
             if projectionDistance < 10 then projectionDistance = 10 end
             
             local pointOnRay = camPos + (lookVec * projectionDistance)
-            local diff = pointOnRay - magTargetPart.Position
+            
+            local dropOffset = Vector3.new(0, 0, 0)
+            if _G.MagnetPart == "Head" then
+                dropOffset = Vector3.new(0, -1.35, 0)
+            end
+            
+            local targetPos = pointOnRay + dropOffset
+            local diff = targetPos - magTargetPart.Position
             
             if diff.Magnitude > MagnetLimit then 
                 diff = diff.Unit * MagnetLimit 
@@ -1087,47 +1073,12 @@ RunService.Heartbeat:Connect(function()
             Net.Size = Vector3.new(20000, 2, 20000)
             Net.Position = Vector3.new(0, voidHeight, 0)
             Net.Anchored = true; Net.CanCollide = false
-            Net.Transparency = 0.6; Net.Color = Color3.fromRGB(255, 0, 0); Net.Material = Enum.Material.ForceField
+            Net.Transparency = 0.6; Net.Color = Color3.fromRGB(0, 255, 200); Net.Material = Enum.Material.ForceField
             Net.Parent = Workspace
         end
         if Root.Position.Y < voidHeight then
             Root.Velocity = Vector3.zero
             Root.CFrame = CFrame.new(Root.Position.X, Root.Position.Y + 150, Root.Position.Z)
-        end
-    end
-    
-    if Features.TriggerBot and not isShooting then
-        local rayParams = RaycastParams.new()
-        rayParams.FilterType = Enum.RaycastFilterType.Blacklist
-        rayParams.FilterDescendantsInstances = {Char, Camera}
-        local result = Workspace:Raycast(Camera.CFrame.Position, Camera.CFrame.LookVector * 1500, rayParams)
-        
-        local isAimingAtEnemy = false
-        if result and result.Instance then
-            local hitModel = result.Instance:FindFirstAncestorOfClass("Model")
-            if hitModel and hitModel:FindFirstChild("Humanoid") and hitModel:FindFirstChild("Humanoid").Health > 0 and IsEnemy(hitModel) then
-                isAimingAtEnemy = true
-            end
-        end
-
-        if isAimingAtEnemy then
-            wasTriggering = true
-            if tick() - lastTriggerClick > 0.05 then 
-                UniversalClick()
-                lastTriggerClick = tick()
-            end
-        elseif wasTriggering then
-            wasTriggering = false
-            task.spawn(function()
-                pcall(function()
-                    if not MenuOpen then
-                        local vim = game:GetService("VirtualInputManager")
-                        if vim then vim:SendMouseButtonEvent(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2, 0, false, game, 1) end
-                    end
-                    local t = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Tool")
-                    if t then t:Deactivate() end
-                end)
-            end)
         end
     end
 end)
@@ -1139,6 +1090,7 @@ local lastSpam = 0
 task.spawn(function()
     while task.wait(1) do
         local Char = LocalPlayer.Character
+        -- TÍNH NĂNG FAST RELOAD BYPASS ANTI-CHEAT
         if Char and (Features.GunMod or Features.FastReload) then
             local Tool = Char:FindFirstChildOfClass("Tool")
             if Tool then
@@ -1146,10 +1098,14 @@ task.spawn(function()
                     if v:IsA("NumberValue") or v:IsA("IntValue") then
                         local name = v.Name:lower()
                         if Features.GunMod and (name:find("recoil") or name:find("spread") or name:find("accuracy")) then 
-                            v.Value = 0 
+                            if v:IsA("NumberValue") or v:IsA("IntValue") then v.Value = 0 end
                         end
                         if Features.FastReload and (name:find("reload") or name:find("loadtime") or name:find("firerate") or name:find("cooldown")) then
-                            v.Value = 0.01
+                            if v:IsA("NumberValue") then
+                                if v.Value > 0.085 then v.Value = 0.085 end -- Giữ ở mức an toàn chống kick
+                            elseif v:IsA("IntValue") then
+                                v.Value = 0
+                            end
                         end
                     end
                 end
@@ -1189,7 +1145,7 @@ task.spawn(function()
                         if not player.Character:FindFirstChild("DeathChams") then
                             local Highlight = Instance.new("Highlight")
                             Highlight.Name = "DeathChams"
-                            Highlight.FillColor = Color3.fromRGB(255, 0, 0) 
+                            Highlight.FillColor = Color3.fromRGB(0, 255, 200) 
                             Highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
                             Highlight.FillTransparency = 0.5 
                             Highlight.OutlineTransparency = 0
@@ -1246,4 +1202,4 @@ task.spawn(function()
     end
 end)
 
-print("iLoVe DeAtH v57.0 (THE FINAL POLISH) Loaded Successfully!")
+print("[Haha Hub :)] Loaded Successfully!")
