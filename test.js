@@ -1,11 +1,11 @@
 // ==UserScript==
-// @name         Selene by Nam2Dz (English Version)
-// @namespace    Nam2Dz
+// @name         Selene by @bo_520
+// @namespace    @bo_dz520
 // @version      1.1
-// @description  made in vietnam :D (Fully translated & optimized)
+// @description  The Remake Version
 // @author       Nam2Dz
 // @match        https://bloxd.io/*
-// @icon         https://www.google.com/s2/favicons?sz=64&domain=bloxd.io
+// @icon         https://raw.githubusercontent.com/miyu-chan520/bo/main/icon.png
 // @grant        none
 // ==/UserScript==
 const text = document.createElement("div");
