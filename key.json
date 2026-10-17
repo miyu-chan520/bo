@@ -1,6 +1,6 @@
 {
   "config": {
-    "maintenance": true,
+    "maintenance": false,
     "message": "ST Root lỏ bị crack"
   },
   "keys": {
